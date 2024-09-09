@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import '../styles/AuthModal.css';
 
-function AuthModal({ type, onClose }) {
+// axios 인스턴스 생성
+const api = axios.create({
+  baseURL: 'http://localhost:8000',
+  withCredentials: true // CORS 관련 설정
+});
+
+function AuthModal({ type, onClose, onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [nickname, setNickname] = useState('');
@@ -35,12 +42,29 @@ function AuthModal({ type, onClose }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // 폼 제출 로직
-      console.log('Form submitted:', { email, username, nickname, password });
-      onClose();
+      try {
+        let response;
+        if (type === 'login') {
+          response = await api.post('/login', { username, password });
+        } else {
+          response = await api.post('/register', { email, username, nickname, password });
+        }
+        console.log('Response:', response.data);
+        if (type === 'login') {
+          // 로그인 성공 시 처리
+          onLoginSuccess(response.data);
+        } else {
+          // 회원가입 성공 시 처리
+          console.log('Registration successful');
+        }
+        onClose();
+      } catch (error) {
+        console.error('Error:', error.response ? error.response.data : error.message);
+        setErrors({ api: error.response ? error.response.data.detail : '서버 오류가 발생했습니다.' });
+      }
     }
   };
 
@@ -112,6 +136,7 @@ function AuthModal({ type, onClose }) {
             {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
           </>
         )}
+        {errors.api && <p className="error">{errors.api}</p>}
         <button type="submit">{type === 'login' ? '로그인' : '회원가입'}</button>
       </form>
       <button onClick={onClose} className="close-button">&times;</button>
