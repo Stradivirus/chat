@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict
@@ -6,6 +7,7 @@ import asyncio
 import time
 import logging
 from kafka_user import kafka_user_manager
+
 
 app = FastAPI()
 
