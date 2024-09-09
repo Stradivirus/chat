@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import ChatPage from './pages/ChatPage';
 import AuthModal from './components/AuthModal';
-import './App.css';
+import './styles/base.css';
+import './styles/components.css';
+import './styles/utilities.css';
+// AuthModal.css는 AuthModal 컴포넌트 내에서 import 됩니다.
 
 function AppContent() {
   const [userCount, setUserCount] = useState(0);
@@ -35,7 +38,7 @@ function AppContent() {
           <div className="user-count">현재 접속자 수: {userCount}</div>
           <div className="header-buttons">
             <button onClick={toggleTheme} className="theme-toggle">
-              {isDarkMode ? '라이트 모드' : '다크 모드'}
+              {isDarkMode ? '라이트' : '다크'}
             </button>
             <button onClick={() => handleAuthButton('login')}>로그인</button>
             <button onClick={() => handleAuthButton('register')}>회원가입</button>
@@ -44,7 +47,9 @@ function AppContent() {
         <ChatPage />
       </aside>
       {showAuthModal && (
-        <AuthModal type={authType} onClose={handleCloseModal} />
+        <div className="modal-backdrop">
+          <AuthModal type={authType} onClose={handleCloseModal} />
+        </div>
       )}
     </div>
   );

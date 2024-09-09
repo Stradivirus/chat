@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../styles/AuthModal.css';
 
 function AuthModal({ type, onClose }) {
   const [email, setEmail] = useState('');
@@ -44,78 +45,76 @@ function AuthModal({ type, onClose }) {
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="auth-modal">
-        <h2>{type === 'login' ? '로그인' : '회원가입'}</h2>
-        <form onSubmit={handleSubmit}>
-          {type === 'login' && (
-            <>
-              <input
-                type="text"
-                placeholder="아이디"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-              {errors.username && <p className="error">{errors.username}</p>}
-              <input
-                type="password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              {errors.password && <p className="error">{errors.password}</p>}
-            </>
-          )}
-          {type === 'register' && (
-            <>
-              <input
-                type="email"
-                placeholder="이메일"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              {errors.email && <p className="error">{errors.email}</p>}
-              <input
-                type="text"
-                placeholder="아이디"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-              {errors.username && <p className="error">{errors.username}</p>}
-              <input
-                type="text"
-                placeholder="닉네임"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                required
-              />
-              {errors.nickname && <p className="error">{errors.nickname}</p>}
-              <input
-                type="password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              {errors.password && <p className="error">{errors.password}</p>}
-              <input
-                type="password"
-                placeholder="비밀번호 확인"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-              {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
-            </>
-          )}
-          <button type="submit">{type === 'login' ? '로그인' : '회원가입'}</button>
-        </form>
-        <button onClick={onClose} className="close-button">닫기</button>
-      </div>
+    <div className="auth-modal">
+      <h2>{type === 'login' ? '로그인' : '회원가입'}</h2>
+      <form onSubmit={handleSubmit}>
+        {type === 'login' && (
+          <>
+            <input
+              type="text"
+              placeholder="아이디"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+            {errors.username && <p className="error">{errors.username}</p>}
+            <input
+              type="password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            {errors.password && <p className="error">{errors.password}</p>}
+          </>
+        )}
+        {type === 'register' && (
+          <>
+            <input
+              type="email"
+              placeholder="이메일"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            {errors.email && <p className="error">{errors.email}</p>}
+            <input
+              type="text"
+              placeholder="아이디"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+            {errors.username && <p className="error">{errors.username}</p>}
+            <input
+              type="text"
+              placeholder="닉네임"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              required
+            />
+            {errors.nickname && <p className="error">{errors.nickname}</p>}
+            <input
+              type="password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            {errors.password && <p className="error">{errors.password}</p>}
+            <input
+              type="password"
+              placeholder="비밀번호 확인"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+            {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
+          </>
+        )}
+        <button type="submit">{type === 'login' ? '로그인' : '회원가입'}</button>
+      </form>
+      <button onClick={onClose} className="close-button">&times;</button>
     </div>
   );
 }
