@@ -58,7 +58,7 @@ function ChatInput({ onSendMessage, isLoggedIn }) {
         type="text"
         value={message}
         onChange={handleChange}
-        placeholder={isLoggedIn ? (isChatBanned ? `채팅 금지: ${banTimeLeft}초 남음` : "메시지를 입력하세요 (최대 30자)") : "로그인 해주세요"}
+        placeholder={isLoggedIn ? (isChatBanned ? `채팅 금지: ${banTimeLeft}초 남음` : "메시지를 입력하세요 (최대 30자)") : ""}
         maxLength={30}
         disabled={!isLoggedIn || isChatBanned}
         className={isChatBanned ? "chat-banned" : ""}
