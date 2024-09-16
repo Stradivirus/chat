@@ -6,8 +6,7 @@ import './styles/base.css';
 import './styles/components.css';
 import './styles/utilities.css';
 
-// WebSocket 연결 URL (환경에 따라 변경 필요)
-const WS_URL = 'ws://localhost:8000/ws';
+const WS_URL = 'ws://218.156.126.186:8000/ws';
 
 function AppContent() {
   const [userCount, setUserCount] = useState(0);
@@ -15,12 +14,12 @@ function AppContent() {
   const [authType, setAuthType] = useState(null);
   const { isDarkMode, toggleTheme } = useTheme();
   const [socket, setSocket] = useState(null);
-  const [clientId, setClientId] = useState(null);
+  const [user, setUser] = useState(null);
 
   const setupWebSocket = useCallback(() => {
-    const newClientId = Math.random().toString(36).substr(2, 9);
-    setClientId(newClientId);
-    const newSocket = new WebSocket(`${WS_URL}/${newClientId}`);
+    if (!user) return;
+
+    const newSocket = new WebSocket(`${WS_URL}/${user.userId}`);
 
     newSocket.onopen = () => {
       console.log('WebSocket Connected');
@@ -29,8 +28,6 @@ function AppContent() {
 
     newSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      // 여기서 메시지 처리 로직을 구현할 수 있습니다.
-      // 예: 사용자 수 업데이트
       if (data.type === 'user_count') {
         setUserCount(data.count);
       }
@@ -41,22 +38,24 @@ function AppContent() {
       setTimeout(() => {
         console.log('Attempting to reconnect...');
         setupWebSocket();
-      }, 5000);  // 5초 후 재연결 시도
+      }, 5000);
     };
 
     newSocket.onerror = (error) => {
       console.error('WebSocket Error:', error);
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    setupWebSocket();
+    if (user) {
+      setupWebSocket();
+    }
     return () => {
       if (socket) {
         socket.close();
       }
     };
-  }, [setupWebSocket]);
+  }, [user, setupWebSocket]);
 
   const handleAuthButton = (type) => {
     setAuthType(type);
@@ -66,6 +65,19 @@ function AppContent() {
   const handleCloseModal = () => {
     setShowAuthModal(false);
     setAuthType(null);
+  };
+
+  const handleLoginSuccess = useCallback((userData) => {
+    console.log('Login successful:', userData);
+    setUser(userData);
+    handleCloseModal();
+  }, []);
+
+  const handleLogout = () => {
+    setUser(null);
+    if (socket) {
+      socket.close();
+    }
   };
 
   return (
@@ -82,18 +94,31 @@ function AppContent() {
         <header className="side-header">
           <div className="user-count">현재 접속자 수: {userCount}</div>
           <div className="header-buttons">
+            {user ? (
+              <>
+                <span className="user-nickname">{user.username}님 환영합니다</span>
+                <button onClick={handleLogout} className="logout-button">로그아웃</button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => handleAuthButton('login')}>로그인</button>
+                <button onClick={() => handleAuthButton('register')}>회원가입</button>
+              </>
+            )}
             <button onClick={toggleTheme} className="theme-toggle">
               {isDarkMode ? '라이트' : '다크'}
             </button>
-            <button onClick={() => handleAuthButton('login')}>로그인</button>
-            <button onClick={() => handleAuthButton('register')}>회원가입</button>
           </div>
         </header>
-        <ChatPage socket={socket} clientId={clientId} />
+        <ChatPage socket={socket} user={user} />
       </aside>
       {showAuthModal && (
         <div className="modal-backdrop">
-          <AuthModal type={authType} onClose={handleCloseModal} />
+          <AuthModal 
+            type={authType} 
+            onClose={handleCloseModal}
+            onLoginSuccess={handleLoginSuccess}
+          />
         </div>
       )}
     </div>

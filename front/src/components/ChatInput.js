@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-function ChatInput({ onSendMessage }) {
+function ChatInput({ onSendMessage, isLoggedIn }) {
   const [message, setMessage] = useState('');
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (message.trim() && message.length <= 30) {
+    if (message.trim() && message.length <= 30 && isLoggedIn) {
       onSendMessage(message);
       setMessage('');
       setIsButtonDisabled(true);
@@ -27,10 +27,13 @@ function ChatInput({ onSendMessage }) {
         type="text"
         value={message}
         onChange={handleChange}
-        placeholder="메시지를 입력하세요 (최대 30자)"
+        placeholder={isLoggedIn ? "메시지를 입력하세요 (최대 30자)" : "로그인 해주세요"}
         maxLength={30}
+        disabled={!isLoggedIn}
       />
-      <button type="submit" disabled={isButtonDisabled}>전송</button>
+      <button type="submit" disabled={isButtonDisabled || !isLoggedIn}>
+        {isLoggedIn ? "전송" : "로그인 해주세요"}
+      </button>
     </form>
   );
 }

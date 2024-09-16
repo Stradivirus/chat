@@ -4,7 +4,7 @@ import '../styles/AuthModal.css';
 
 // axios 인스턴스 생성
 const api = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: 'http://218.156.126.186:8000/',
   withCredentials: true // CORS 관련 설정
 });
 
@@ -15,6 +15,7 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -45,25 +46,49 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
+      setIsLoading(true);
       try {
         let response;
         if (type === 'login') {
           response = await api.post('/login', { username, password });
+          console.log('Login response:', response.data);
+          if (response.data && response.data.user_id) {
+            setTimeout(() => {
+              if (typeof onLoginSuccess === 'function') {
+                onLoginSuccess({
+                  userId: response.data.user_id,
+                  username: username
+                });
+              } else {
+                console.error('onLoginSuccess is not a function');
+              }
+              setIsLoading(false);
+              onClose();
+            }, 1000); // 1초 대기
+          } else {
+            throw new Error('Invalid server response');
+          }
         } else {
           response = await api.post('/register', { email, username, nickname, password });
+          console.log('Registration successful:', response.data);
+          if (response.data && response.data.user_id) {
+            // 회원가입 후 자동 로그인
+            if (typeof onLoginSuccess === 'function') {
+              onLoginSuccess({
+                userId: response.data.user_id,
+                username: username
+              });
+            } else {
+              console.error('onLoginSuccess is not a function');
+            }
+          }
+          setIsLoading(false);
+          onClose();
         }
-        console.log('Response:', response.data);
-        if (type === 'login') {
-          // 로그인 성공 시 처리
-          onLoginSuccess(response.data);
-        } else {
-          // 회원가입 성공 시 처리
-          console.log('Registration successful');
-        }
-        onClose();
       } catch (error) {
         console.error('Error:', error.response ? error.response.data : error.message);
         setErrors({ api: error.response ? error.response.data.detail : '서버 오류가 발생했습니다.' });
+        setIsLoading(false);
       }
     }
   };
@@ -137,7 +162,9 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
           </>
         )}
         {errors.api && <p className="error">{errors.api}</p>}
-        <button type="submit">{type === 'login' ? '로그인' : '회원가입'}</button>
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? '처리 중...' : (type === 'login' ? '로그인' : '회원가입')}
+        </button>
       </form>
       <button onClick={onClose} className="close-button">&times;</button>
     </div>
