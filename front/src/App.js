@@ -15,6 +15,8 @@ function AppContent() {
   const { isDarkMode, toggleTheme } = useTheme();
   const [socket, setSocket] = useState(null);
   const [user, setUser] = useState(null);
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
+  const [chatBanTimeLeft, setChatBanTimeLeft] = useState(0);
 
   const setupWebSocket = useCallback(() => {
     if (!user) return;
@@ -30,15 +32,21 @@ function AppContent() {
       const data = JSON.parse(event.data);
       if (data.type === 'user_count') {
         setUserCount(data.count);
+      } else if (data.type === 'session_expired') {
+        setShowSessionExpiredModal(true);
+      } else if (data.type === 'chat_banned') {
+        setChatBanTimeLeft(data.time_left);
       }
     };
 
-    newSocket.onclose = () => {
-      console.log('WebSocket Disconnected');
-      setTimeout(() => {
-        console.log('Attempting to reconnect...');
-        setupWebSocket();
-      }, 5000);
+    newSocket.onclose = (event) => {
+      if (event.code !== 1000) {
+        console.log('WebSocket Disconnected');
+        setTimeout(() => {
+          console.log('Attempting to reconnect...');
+          setupWebSocket();
+        }, 5000);
+      }
     };
 
     newSocket.onerror = (error) => {
@@ -52,10 +60,19 @@ function AppContent() {
     }
     return () => {
       if (socket) {
-        socket.close();
+        socket.close(1000, "Intentional disconnect");
       }
     };
   }, [user, setupWebSocket]);
+
+  useEffect(() => {
+    if (chatBanTimeLeft > 0) {
+      const timer = setInterval(() => {
+        setChatBanTimeLeft((prev) => Math.max(0, prev - 1));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [chatBanTimeLeft]);
 
   const handleAuthButton = (type) => {
     setAuthType(type);
@@ -76,8 +93,13 @@ function AppContent() {
   const handleLogout = () => {
     setUser(null);
     if (socket) {
-      socket.close();
+      socket.close(1000, "Logout");
     }
+  };
+
+  const handleSessionExpired = () => {
+    setShowSessionExpiredModal(false);
+    handleLogout();
   };
 
   return (
@@ -110,7 +132,7 @@ function AppContent() {
             </button>
           </div>
         </header>
-        <ChatPage socket={socket} user={user} />
+        <ChatPage socket={socket} user={user} chatBanTimeLeft={chatBanTimeLeft} />
       </aside>
       {showAuthModal && (
         <div className="modal-backdrop">
@@ -119,6 +141,14 @@ function AppContent() {
             onClose={handleCloseModal}
             onLoginSuccess={handleLoginSuccess}
           />
+        </div>
+      )}
+      {showSessionExpiredModal && (
+        <div className="modal-backdrop">
+          <div className="session-expired-modal">
+            <p>다른 기기에서 로그인되어 로그아웃 되었습니다.</p>
+            <button onClick={handleSessionExpired}>확인</button>
+          </div>
         </div>
       )}
     </div>

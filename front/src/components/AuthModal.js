@@ -64,7 +64,7 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
               }
               setIsLoading(false);
               onClose();
-            }, 1000); // 1초 대기
+            }, 500); // 1초 대기
           } else {
             throw new Error('Invalid server response');
           }

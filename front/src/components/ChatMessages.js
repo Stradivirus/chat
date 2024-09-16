@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 function ChatMessages({ messages, currentUserId }) {
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(scrollToBottom, [messages]);
+
   return (
     <div className="chat-messages">
       {messages.map((message, index) => (
@@ -15,6 +23,7 @@ function ChatMessages({ messages, currentUserId }) {
           )}
         </div>
       ))}
+      <div ref={messagesEndRef} />
     </div>
   );
 }

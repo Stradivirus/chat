@@ -8,6 +8,7 @@ from postgresql_manager import postgres_manager
 from pydantic import BaseModel, Field
 import uuid
 import time
+from collections import defaultdict, deque
 
 app = FastAPI()
 
@@ -26,11 +27,24 @@ logger = logging.getLogger(__name__)
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
+        self.user_messages: Dict[str, deque] = defaultdict(lambda: deque(maxlen=3))
+        self.user_ban_until: Dict[str, float] = {}
+        self.spam_window = 5  # 5초 동안의 메시지를 검사
 
     async def connect(self, websocket: WebSocket, user_id: str):
         await websocket.accept()
+        if user_id in self.active_connections:
+            await self.disconnect_previous_session(user_id)
         self.active_connections[user_id] = websocket
         logger.info(f"User {user_id} connected. Total connections: {len(self.active_connections)}")
+
+    async def disconnect_previous_session(self, user_id: str):
+        if user_id in self.active_connections:
+            prev_websocket = self.active_connections[user_id]
+            await prev_websocket.send_json({"type": "session_expired"})
+            await prev_websocket.close()
+            del self.active_connections[user_id]
+            logger.info(f"Previous session for user {user_id} disconnected")
 
     def disconnect(self, user_id: str):
         if user_id in self.active_connections:
@@ -38,6 +52,28 @@ class ConnectionManager:
             logger.info(f"User {user_id} disconnected. Total connections: {len(self.active_connections)}")
 
     async def broadcast(self, message: str, sender_id: str, username: str):
+        if self.is_user_banned(sender_id):
+            ban_time_left = int(self.user_ban_until[sender_id] - time.time())
+            await self.active_connections[sender_id].send_json({
+                "type": "chat_banned",
+                "time_left": ban_time_left
+            })
+            return
+
+        current_time = time.time()
+        self.user_messages[sender_id].append((message, current_time))
+
+        if len(self.user_messages[sender_id]) == 3:
+            oldest_message, oldest_time = self.user_messages[sender_id][0]
+            if (current_time - oldest_time <= self.spam_window and 
+                all(msg == oldest_message for msg, _ in self.user_messages[sender_id])):
+                self.user_ban_until[sender_id] = current_time + 20
+                await self.active_connections[sender_id].send_json({
+                    "type": "chat_banned",
+                    "time_left": 20
+                })
+                return
+
         success = await postgres_manager.save_message(sender_id, message)
         if not success:
             logger.error(f"Failed to save message from {sender_id}")
@@ -57,6 +93,9 @@ class ConnectionManager:
         
         for dead in dead_connections:
             self.disconnect(dead)
+
+    def is_user_banned(self, user_id: str) -> bool:
+        return user_id in self.user_ban_until and time.time() < self.user_ban_until[user_id]
 
 manager = ConnectionManager()
 
