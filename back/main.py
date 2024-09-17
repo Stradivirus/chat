@@ -27,9 +27,11 @@ logger = logging.getLogger(__name__)
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
-        self.user_messages: Dict[str, deque] = defaultdict(lambda: deque(maxlen=3))
+        self.user_messages: Dict[str, deque] = defaultdict(lambda: deque(maxlen=4))
         self.user_ban_until: Dict[str, float] = {}
         self.spam_window = 5  # 5초 동안의 메시지를 검사
+        self.spam_threshold = 4  # 5초 동안 4개 이상의 동일 메시지를 스팸으로 간주
+        self.user_count_task = None
 
     async def connect(self, websocket: WebSocket, user_id: str):
         await websocket.accept()
@@ -37,6 +39,8 @@ class ConnectionManager:
             await self.disconnect_previous_session(user_id)
         self.active_connections[user_id] = websocket
         logger.info(f"User {user_id} connected. Total connections: {len(self.active_connections)}")
+        if self.user_count_task is None:
+            self.user_count_task = asyncio.create_task(self.periodic_user_count_update())
 
     async def disconnect_previous_session(self, user_id: str):
         if user_id in self.active_connections:
@@ -46,10 +50,13 @@ class ConnectionManager:
             del self.active_connections[user_id]
             logger.info(f"Previous session for user {user_id} disconnected")
 
-    def disconnect(self, user_id: str):
+    async def disconnect(self, user_id: str):
         if user_id in self.active_connections:
             del self.active_connections[user_id]
             logger.info(f"User {user_id} disconnected. Total connections: {len(self.active_connections)}")
+        if len(self.active_connections) == 0 and self.user_count_task:
+            self.user_count_task.cancel()
+            self.user_count_task = None
 
     async def broadcast(self, message: str, sender_id: str, username: str):
         if self.is_user_banned(sender_id):
@@ -63,39 +70,66 @@ class ConnectionManager:
         current_time = time.time()
         self.user_messages[sender_id].append((message, current_time))
 
-        if len(self.user_messages[sender_id]) == 3:
-            oldest_message, oldest_time = self.user_messages[sender_id][0]
-            if (current_time - oldest_time <= self.spam_window and 
-                all(msg == oldest_message for msg, _ in self.user_messages[sender_id])):
-                self.user_ban_until[sender_id] = current_time + 20
-                await self.active_connections[sender_id].send_json({
-                    "type": "chat_banned",
-                    "time_left": 20
-                })
-                return
+        if self.is_spam(sender_id):
+            self.ban_user(sender_id)
+            await self.active_connections[sender_id].send_json({
+                "type": "chat_banned",
+                "time_left": 20  # 20초 밴
+            })
+            return
 
         success = await postgres_manager.save_message(sender_id, message)
         if not success:
             logger.error(f"Failed to save message from {sender_id}")
 
+        await self.broadcast_to_all(json.dumps({
+            "message": message,
+            "sender": sender_id,
+            "username": username,
+            "timestamp": int(time.time() * 1000)
+        }))
+
+    def is_spam(self, sender_id: str):
+        if len(self.user_messages[sender_id]) < self.spam_threshold:
+            return False
+        
+        current_time = time.time()
+        oldest_message_time = self.user_messages[sender_id][0][1]
+        
+        if current_time - oldest_message_time <= self.spam_window:
+            return all(msg == self.user_messages[sender_id][0][0] for msg, _ in self.user_messages[sender_id])
+        
+        return False
+
+    def ban_user(self, user_id: str):
+        self.user_ban_until[user_id] = time.time() + 20  # 20초 밴
+
+    async def broadcast_to_all(self, message: str):
         dead_connections = []
         for user_id, connection in self.active_connections.items():
             try:
-                await connection.send_json({
-                    "message": message,
-                    "sender": sender_id,
-                    "username": username,
-                    "timestamp": int(time.time() * 1000)
-                })
+                await connection.send_text(message)
             except Exception as e:
                 logger.error(f"Error sending message to user {user_id}: {e}")
                 dead_connections.append(user_id)
         
         for dead in dead_connections:
-            self.disconnect(dead)
+            await self.disconnect(dead)
 
     def is_user_banned(self, user_id: str) -> bool:
-        return user_id in self.user_ban_until and time.time() < self.user_ban_until[user_id]
+        if user_id in self.user_ban_until:
+            if time.time() >= self.user_ban_until[user_id]:
+                del self.user_ban_until[user_id]
+                self.user_messages[user_id].clear()  # 밴 해제 시 메시지 기록 초기화
+                return False
+            return True
+        return False
+
+    async def periodic_user_count_update(self):
+        while True:
+            await asyncio.sleep(1)  # 1초 대기
+            count = len(self.active_connections)
+            await self.broadcast_to_all(json.dumps({"type": "user_count", "count": count}))
 
 manager = ConnectionManager()
 
@@ -176,7 +210,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                 logger.error(f"Unexpected error with user {user_id}: {e}")
                 break
     finally:
-        manager.disconnect(user_id)
+        await manager.disconnect(user_id)
         await manager.broadcast(f"{username}님이 퇴장하셨습니다.", "system", "System")
 
 if __name__ == "__main__":

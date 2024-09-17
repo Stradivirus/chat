@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ChatMessages from '../components/ChatMessages';
 import ChatInput from '../components/ChatInput';
 
-function ChatPage({ socket, user }) {
+function ChatPage({ socket, user, chatBanTimeLeft }) {
   const [messages, setMessages] = useState([]);
 
   const handleSendMessage = useCallback((messageText) => {
@@ -25,7 +25,7 @@ function ChatPage({ socket, user }) {
     const handleMessage = (event) => {
       const data = JSON.parse(event.data);
       
-      if (data.type !== 'user_count') {
+      if (data.type !== 'user_count' && data.type !== 'chat_banned') {
         setMessages(prev => {
           const isDuplicate = prev.some(msg => msg.timestamp === data.timestamp);
           if (isDuplicate) return prev;
@@ -50,7 +50,11 @@ function ChatPage({ socket, user }) {
   return (
     <div className="chat-page">
       <ChatMessages messages={messages} currentUserId={user?.userId} />
-      <ChatInput onSendMessage={handleSendMessage} isLoggedIn={!!user} />
+      <ChatInput 
+        onSendMessage={handleSendMessage} 
+        isLoggedIn={!!user} 
+        chatBanTimeLeft={chatBanTimeLeft}
+      />
     </div>
   );
 }

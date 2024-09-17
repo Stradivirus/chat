@@ -132,7 +132,11 @@ function AppContent() {
             </button>
           </div>
         </header>
-        <ChatPage socket={socket} user={user} chatBanTimeLeft={chatBanTimeLeft} />
+        <ChatPage 
+          socket={socket} 
+          user={user} 
+          chatBanTimeLeft={chatBanTimeLeft} 
+        />
       </aside>
       {showAuthModal && (
         <div className="modal-backdrop">

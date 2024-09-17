@@ -1,44 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function ChatInput({ onSendMessage, isLoggedIn }) {
+function ChatInput({ onSendMessage, isLoggedIn, chatBanTimeLeft }) {
   const [message, setMessage] = useState('');
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [isChatBanned, setIsChatBanned] = useState(false);
-  const [banTimeLeft, setBanTimeLeft] = useState(0);
-  const lastMessages = useRef([]);
-  const banTimerRef = useRef(null);
 
   useEffect(() => {
-    return () => {
-      if (banTimerRef.current) {
-        clearInterval(banTimerRef.current);
-      }
-    };
-  }, []);
+    if (chatBanTimeLeft > 0) {
+      setIsButtonDisabled(true);
+    } else {
+      setIsButtonDisabled(false);
+    }
+  }, [chatBanTimeLeft]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (message.trim() && message.length <= 30 && isLoggedIn && !isChatBanned) {
+    if (message.trim() && message.length <= 30 && isLoggedIn && chatBanTimeLeft === 0) {
       onSendMessage(message);
-      lastMessages.current.push(message);
-      if (lastMessages.current.length > 3) {
-        lastMessages.current.shift();
-      }
-      if (lastMessages.current.length === 3 && 
-          lastMessages.current.every(msg => msg === lastMessages.current[0])) {
-        setIsChatBanned(true);
-        setBanTimeLeft(20);
-        banTimerRef.current = setInterval(() => {
-          setBanTimeLeft(prev => {
-            if (prev <= 1) {
-              clearInterval(banTimerRef.current);
-              setIsChatBanned(false);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      }
       setMessage('');
       setIsButtonDisabled(true);
       setTimeout(() => setIsButtonDisabled(false), 500);
@@ -58,13 +35,13 @@ function ChatInput({ onSendMessage, isLoggedIn }) {
         type="text"
         value={message}
         onChange={handleChange}
-        placeholder={isLoggedIn ? (isChatBanned ? `채팅 금지: ${banTimeLeft}초 남음` : "메시지를 입력하세요 (최대 30자)") : ""}
+        placeholder={isLoggedIn ? (chatBanTimeLeft > 0 ? `채팅 금지: ${chatBanTimeLeft}초 남음` : "메시지를 입력하세요 (최대 30자)") : ""}
         maxLength={30}
-        disabled={!isLoggedIn || isChatBanned}
-        className={isChatBanned ? "chat-banned" : ""}
+        disabled={!isLoggedIn || chatBanTimeLeft > 0}
+        className={chatBanTimeLeft > 0 ? "chat-banned" : ""}
       />
-      <button type="submit" disabled={isButtonDisabled || !isLoggedIn || isChatBanned}>
-        {isLoggedIn ? (isChatBanned ? `${banTimeLeft}초` : "전송") : "로그인 해주세요"}
+      <button type="submit" disabled={isButtonDisabled || !isLoggedIn || chatBanTimeLeft > 0}>
+        {isLoggedIn ? (chatBanTimeLeft > 0 ? `${chatBanTimeLeft}초` : "전송") : "로그인 해주세요"}
       </button>
     </form>
   );
