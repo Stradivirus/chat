@@ -7,10 +7,13 @@ import bcrypt
 
 class PostgresManager:
     def __init__(self):
+        # 데이터베이스 연결 풀을 저장할 변수
         self.pool = None
+        # 로거 설정
         self.logger = logging.getLogger(__name__)
 
     async def start(self):
+        # 데이터베이스 연결 풀 생성
         self.pool = await asyncpg.create_pool(
             user='chat_admin',
             password='1q2w3e4r!!',
@@ -18,13 +21,17 @@ class PostgresManager:
             host='localhost',
             port=5432
         )
+        # 테이블 생성 메서드 호출
         await self.create_tables()
 
     async def stop(self):
+        # 데이터베이스 연결 풀 종료
         await self.pool.close()
 
     async def create_tables(self):
+        # 데이터베이스 테이블 생성
         async with self.pool.acquire() as conn:
+            # users 테이블 생성
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS users (
                     id UUID PRIMARY KEY,
@@ -35,6 +42,8 @@ class PostgresManager:
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
+            
+            # user_sessions 테이블 생성 (파티션 테이블)
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS user_sessions (
                     id UUID NOT NULL,
@@ -45,6 +54,8 @@ class PostgresManager:
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 ) PARTITION BY RANGE (login_time)
             ''')
+            
+            # messages 테이블 생성 (파티션 테이블)
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS messages (
                     id UUID NOT NULL,
@@ -54,6 +65,8 @@ class PostgresManager:
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 ) PARTITION BY RANGE (created_at)
             ''')
+            
+            # 파티션 생성을 위한 함수 정의
             await conn.execute('''
                 CREATE OR REPLACE FUNCTION create_time_partition(table_name text, date date)
                 RETURNS void AS $$
@@ -63,12 +76,14 @@ class PostgresManager:
                     start_date TIMESTAMP := partition_date;
                     end_date TIMESTAMP := partition_date + INTERVAL '1 day';
                 BEGIN
-                    EXECUTE format('CREATE TABLE IF NOT EXISTS %I PARTITION OF %I 
-                                    FOR VALUES FROM (%L) TO (%L)', 
-                                    partition_name, table_name, start_date, end_date);
+                    EXECUTE format('CREATE TABLE IF NOT EXISTS %I PARTITION OF %I
+                        FOR VALUES FROM (%L) TO (%L)',
+                        partition_name, table_name, start_date, end_date);
                 END;
                 $$ LANGUAGE plpgsql;
             ''')
+            
+            # 초기 파티션 생성 (현재 날짜부터 7일간)
             await conn.execute('''
                 DO $$
                 DECLARE
@@ -80,6 +95,8 @@ class PostgresManager:
                     END LOOP;
                 END $$;
             ''')
+            
+            # 인덱스 생성
             await conn.execute('''
                 CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
                 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
@@ -89,6 +106,7 @@ class PostgresManager:
             ''')
 
     async def ensure_partition_exists(self, table_name: str, date: datetime.date):
+        # 지정된 날짜의 파티션이 존재하는지 확인하고, 없으면 생성
         async with self.pool.acquire() as conn:
             partition_name = f"{table_name}_{date.strftime('%Y_%m_%d')}"
             partition_exists = await conn.fetchval(
@@ -97,16 +115,17 @@ class PostgresManager:
             )
             if not partition_exists:
                 self.logger.info(f"Creating new partitions for {table_name} starting from {date}")
-                for i in range(7):
+                for i in range(7):  # 7일간의 파티션 생성
                     await conn.execute(
                         f"SELECT create_time_partition('{table_name}', $1)",
                         date + timedelta(days=i)
                     )
 
     async def register_user(self, username: str, password: str, email: str, nickname: str):
+        # 새 사용자 등록
         try:
+            # 비밀번호 해싱
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            
             async with self.pool.acquire() as conn:
                 user_id = await conn.fetchval(
                     'INSERT INTO users (id, username, email, nickname, password) VALUES ($1, $2, $3, $4, $5) RETURNING id',
@@ -122,15 +141,16 @@ class PostgresManager:
             return False, "Error registering user"
 
     async def login_user(self, username: str, password: str):
+        # 사용자 로그인
         try:
             async with self.pool.acquire() as conn:
                 user = await conn.fetchrow(
                     'SELECT id, password FROM users WHERE username = $1',
                     username
                 )
-            if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-                self.logger.info(f"Successful login for username: {username}")
-                return True, str(user['id'])
+                if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+                    self.logger.info(f"Successful login for username: {username}")
+                    return True, str(user['id'])
             self.logger.warning(f"Failed login attempt for username: {username}")
             return False, "Invalid username or password"
         except Exception as e:
@@ -138,10 +158,10 @@ class PostgresManager:
             return False, "Error during login"
 
     async def save_message(self, user_id: str, content: str):
+        # 채팅 메시지 저장
         try:
             message_date = datetime.now().date()
             await self.ensure_partition_exists('messages', message_date)
-            
             async with self.pool.acquire() as conn:
                 await conn.execute(
                     'INSERT INTO messages (id, user_id, content) VALUES ($1, $2, $3)',
@@ -153,10 +173,10 @@ class PostgresManager:
             return False
 
     async def save_user_session(self, user_id: str, ip_address: str):
+        # 사용자 세션 정보 저장
         try:
             session_date = datetime.now().date()
             await self.ensure_partition_exists('user_sessions', session_date)
-            
             async with self.pool.acquire() as conn:
                 await conn.execute(
                     'INSERT INTO user_sessions (id, user_id, ip_address) VALUES ($1, $2, $3)',
@@ -168,6 +188,7 @@ class PostgresManager:
             return False
 
     async def get_recent_messages(self, limit: int = 50) -> List[Dict]:
+        # 최근 메시지 조회
         try:
             async with self.pool.acquire() as conn:
                 rows = await conn.fetch('''
@@ -183,17 +204,19 @@ class PostgresManager:
             return []
 
     async def get_user_by_id(self, user_id: str):
+        # 사용자 ID로 사용자 정보 조회
         try:
             async with self.pool.acquire() as conn:
                 user = await conn.fetchrow(
                     'SELECT id, username FROM users WHERE id = $1',
                     uuid.UUID(user_id)
                 )
-            if user:
-                return {"id": str(user['id']), "username": user['username']}
+                if user:
+                    return {"id": str(user['id']), "username": user['username']}
             return None
         except Exception as e:
             self.logger.error(f"Error fetching user by ID: {e}")
             return None
 
+# PostgresManager 인스턴스 생성
 postgres_manager = PostgresManager()

@@ -6,18 +6,21 @@ import './styles/base.css';
 import './styles/components.css';
 import './styles/utilities.css';
 
+// WebSocket 서버 URL
 const WS_URL = 'ws://218.156.126.186:8000/ws';
 
 function AppContent() {
-  const [userCount, setUserCount] = useState(0);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authType, setAuthType] = useState(null);
-  const { isDarkMode, toggleTheme } = useTheme();
-  const [socket, setSocket] = useState(null);
-  const [user, setUser] = useState(null);
-  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
-  const [chatBanTimeLeft, setChatBanTimeLeft] = useState(0);
+  // 상태 관리
+  const [userCount, setUserCount] = useState(0);  // 현재 접속자 수
+  const [showAuthModal, setShowAuthModal] = useState(false);  // 인증 모달 표시 여부
+  const [authType, setAuthType] = useState(null);  // 인증 타입 (로그인/회원가입)
+  const { isDarkMode, toggleTheme } = useTheme();  // 테마 관련 상태와 함수
+  const [socket, setSocket] = useState(null);  // WebSocket 연결 객체
+  const [user, setUser] = useState(null);  // 현재 로그인한 사용자 정보
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);  // 세션 만료 모달 표시 여부
+  const [chatBanTimeLeft, setChatBanTimeLeft] = useState(0);  // 채팅 금지 남은 시간
 
+  // WebSocket 연결 설정 함수
   const setupWebSocket = useCallback(() => {
     if (!user) return;
 
@@ -54,6 +57,7 @@ function AppContent() {
     };
   }, [user]);
 
+  // 사용자 로그인 상태 변경 시 WebSocket 연결 설정
   useEffect(() => {
     if (user) {
       setupWebSocket();
@@ -65,6 +69,7 @@ function AppContent() {
     };
   }, [user, setupWebSocket]);
 
+  // 채팅 금지 타이머 관리
   useEffect(() => {
     if (chatBanTimeLeft > 0) {
       const timer = setInterval(() => {
@@ -74,22 +79,26 @@ function AppContent() {
     }
   }, [chatBanTimeLeft]);
 
+  // 인증 모달 표시 함수
   const handleAuthButton = (type) => {
     setAuthType(type);
     setShowAuthModal(true);
   };
 
+  // 인증 모달 닫기 함수
   const handleCloseModal = () => {
     setShowAuthModal(false);
     setAuthType(null);
   };
 
+  // 로그인 성공 처리 함수
   const handleLoginSuccess = useCallback((userData) => {
     console.log('Login successful:', userData);
     setUser(userData);
     handleCloseModal();
   }, []);
 
+  // 로그아웃 처리 함수
   const handleLogout = () => {
     setUser(null);
     if (socket) {
@@ -97,6 +106,7 @@ function AppContent() {
     }
   };
 
+  // 세션 만료 처리 함수
   const handleSessionExpired = () => {
     setShowSessionExpiredModal(false);
     handleLogout();
@@ -159,6 +169,7 @@ function AppContent() {
   );
 }
 
+// 최상위 App 컴포넌트
 function App() {
   return (
     <ThemeProvider>
