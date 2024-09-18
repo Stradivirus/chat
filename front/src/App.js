@@ -26,7 +26,7 @@ function AppContent() {
     if (socket) {
       const handleMessage = (event) => {
         const data = JSON.parse(event.data);
-        if (data.type === 'user_count' && user) {
+        if (data.type === 'user_count') {
           setUserCount(data.count);
         }
         // 다른 메시지 처리...
@@ -38,7 +38,7 @@ function AppContent() {
         socket.removeEventListener('message', handleMessage);
       };
     }
-  }, [socket, user]);
+  }, [socket]);
 
   const handleAuthButton = (type) => {
     setAuthType(type);
@@ -81,7 +81,7 @@ function AppContent() {
       </div>
       <aside className="side-container">
         <header className="side-header">
-          <div className="user-count">현재 접속자 수: {user ? userCount : 0}</div>
+          <div className="user-count">현재 접속자 수: {userCount}</div>
           <div className="header-buttons">
             {user ? (
               <>

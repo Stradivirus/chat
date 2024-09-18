@@ -9,7 +9,7 @@ function ChatPage({ socket, user, chatBanTimeLeft, sendMessage }) {
     if (user) {
       const messageObj = {
         message: messageText,
-        sender: user.userId,
+        sender_id: user.userId,
         username: user.username,
         timestamp: Date.now()
       };
@@ -28,13 +28,12 @@ function ChatPage({ socket, user, chatBanTimeLeft, sendMessage }) {
       if (data.type !== 'user_count' && data.type !== 'chat_banned') {
         setMessages(prev => {
           const isDuplicate = prev.some(msg => 
-            msg.timestamp === data.timestamp && msg.sender === data.sender
+            msg.timestamp === data.timestamp && msg.sender_id === data.sender_id
           );
           const isEmptyContent = !data.message || data.message.trim() === '' || data.message === '내용 없음';
           
           if (isDuplicate || isEmptyContent) return prev;
 
-          // 퇴장 메시지 필터링 제거
           return [...prev, data];
         });
       }

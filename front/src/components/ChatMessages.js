@@ -19,26 +19,26 @@ function ChatMessages({ messages, currentUserId }) {
   return (
     <div className="chat-messages">
       {messages.map((message, index) => {
-        let messageContent, sender, username;
+        let messageContent, sender_id, username;
         
         if (typeof message === 'string') {
           try {
             const parsedMessage = JSON.parse(message);
             messageContent = parsedMessage.message;
-            sender = parsedMessage.sender;
+            sender_id = parsedMessage.sender_id;
             username = parsedMessage.username;
           } catch (e) {
             console.error("Failed to parse message:", e);
             return null;
           }
         } else {
-          messageContent = message.message || message.text;
-          sender = message.sender;
+          messageContent = message.message;
+          sender_id = message.sender_id;
           username = message.username;
         }
 
         // System message 처리
-        if (sender === 'system' || message.type === 'system') {
+        if (sender_id === 'system' || message.type === 'system') {
           messageContent = decodeUnicode(messageContent);
         }
 
@@ -49,9 +49,9 @@ function ChatMessages({ messages, currentUserId }) {
         return (
           <div 
             key={index} 
-            className={`message ${sender === currentUserId ? 'user' : (sender === 'system' ? 'system' : 'other')}`}
+            className={`message ${sender_id === currentUserId ? 'user' : (sender_id === 'system' ? 'system' : 'other')}`}
           >
-            {sender !== currentUserId && sender !== 'system' && (
+            {sender_id !== currentUserId && sender_id !== 'system' && (
               <span className="message-username"><strong>{username || 'Anonymous'}</strong> </span>
             )}
             <span>{messageContent}</span>
