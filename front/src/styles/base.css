@@ -2,73 +2,73 @@
 
 /* 전역 스타일 */
 body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
-  }
-  
-  /* 기본 레이아웃 */
-  .App {
-    height: 100vh;
-    display: flex;
-  }
-  
-  .main-section {
-    flex: 0.8;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .side-container {
-    flex: 0.2;
-    display: flex;
-    flex-direction: column;
-    background-color: #f8f9fa;
-    border-left: 1px solid #e1e4e8;
-  }
-  
-  /* 기본 컨테이너 스타일 */
-  .main-content {
-    flex: 1;
-    background-color: #ffffff;
-    padding: 20px;
-    overflow-y: auto;
-  }
-  
-  /* 기본 헤더 스타일 */
-  .main-header, .side-header {
-    height: 60px;
-    background-color: #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 20px;
-  }
-  
-  /* 기본 텍스트 스타일 */
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #333;
-    text-align: center;
-  }
-  
-  /* 스크롤바 스타일 */
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+/* 기본 레이아웃 */
+.App {
+  height: 100vh;
+  display: flex;
+}
+
+.main-section {
+  flex: 0.8;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-container {
+  flex: 0.2;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fa;
+  border-left: 1px solid #e1e4e8;
+}
+
+/* 기본 컨테이너 스타일 */
+.main-content {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* 기본 헤더 스타일 */
+.main-header, .side-header {
+  height: 60px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* 기본 텍스트 스타일 */
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
