@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 class ConnectionManager:
     def __init__(self):
-        # 활성 연결, 사용자 메시지, 차단 정보 등을 저장하는 속성 초기화
         self.active_connections: Dict[str, WebSocket] = {}
         self.user_messages: Dict[str, deque] = defaultdict(lambda: deque(maxlen=4))
         self.user_ban_until: Dict[str, float] = {}
@@ -21,7 +20,6 @@ class ConnectionManager:
         self.background_tasks: Set[asyncio.Task] = set()
 
     async def connect(self, websocket: WebSocket, user_id: str):
-        # 새로운 WebSocket 연결 수락 및 기존 세션 처리
         await websocket.accept()
         if user_id in self.active_connections:
             await self.disconnect_previous_session(user_id)
@@ -29,7 +27,6 @@ class ConnectionManager:
         logger.info(f"User {user_id} connected. Total connections: {len(self.active_connections)}")
 
     async def disconnect_previous_session(self, user_id: str):
-        # 동일한 사용자의 이전 세션 연결 해제
         if user_id in self.active_connections:
             prev_websocket = self.active_connections[user_id]
             await prev_websocket.send_json({"type": "session_expired"})
@@ -38,15 +35,13 @@ class ConnectionManager:
             logger.info(f"Previous session for user {user_id} disconnected")
 
     async def disconnect(self, user_id: str):
-        # 사용자 연결 해제
         if user_id in self.active_connections:
             del self.active_connections[user_id]
             logger.info(f"User {user_id} disconnected. Total connections: {len(self.active_connections)}")
+        # 로그아웃 메시지 브로드캐스트 제거
 
     async def broadcast(self, message: str, sender_id: str = None, username: str = None):
-        # 모든 연결된 클라이언트에게 메시지 브로드캐스트
         if sender_id and username:
-            # 사용자 차단 및 스팸 검사
             if self.is_user_banned(sender_id):
                 ban_time_left = int(self.user_ban_until[sender_id] - time.time())
                 await self.active_connections[sender_id].send_json({
@@ -72,13 +67,11 @@ class ConnectionManager:
                 "timestamp": int(time.time() * 1000)
             }
         else:
-            # 시스템 메시지 처리
             try:
                 message_data = json.loads(message)
             except json.JSONDecodeError:
                 message_data = {"type": "system", "message": message}
 
-        # 모든 연결에 메시지 전송
         dead_connections = []
         for user_id, connection in self.active_connections.items():
             try:
@@ -87,12 +80,10 @@ class ConnectionManager:
                 logger.error(f"Error sending message to user {user_id}: {e}")
                 dead_connections.append(user_id)
 
-        # 끊어진 연결 정리
         for dead in dead_connections:
             await self.disconnect(dead)
 
     def is_spam(self, sender_id: str):
-        # 스팸 메시지 여부 확인
         if len(self.user_messages[sender_id]) < self.spam_threshold:
             return False
         current_time = time.time()
@@ -102,11 +93,9 @@ class ConnectionManager:
         return False
 
     def ban_user(self, user_id: str):
-        # 사용자 차단
         self.user_ban_until[user_id] = time.time() + 20
 
     def is_user_banned(self, user_id: str) -> bool:
-        # 사용자 차단 여부 확인
         if user_id in self.user_ban_until:
             if time.time() >= self.user_ban_until[user_id]:
                 del self.user_ban_until[user_id]

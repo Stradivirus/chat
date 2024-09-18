@@ -7,52 +7,63 @@ import './styles/base.css';
 import './styles/components.css';
 import './styles/utilities.css';
 
-// AppContent 컴포넌트: 애플리케이션의 주요 내용을 담당
 function AppContent() {
-  // 상태 관리
-  const [showAuthModal, setShowAuthModal] = useState(false);  // 인증 모달 표시 여부
-  const [authType, setAuthType] = useState(null);  // 인증 타입 (로그인/회원가입)
-  const { isDarkMode, toggleTheme } = useTheme();  // 테마 관련 상태 및 함수
-  const [user, setUser] = useState(null);  // 현재 로그인한 사용자 정보
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authType, setAuthType] = useState(null);
+  const { isDarkMode, toggleTheme } = useTheme();
+  const [user, setUser] = useState(null);
+  const [userCount, setUserCount] = useState(0);
 
-  // useWebSocket 훅 사용
   const {
     socket,
-    userCount,
     showSessionExpiredModal,
     setShowSessionExpiredModal,
     chatBanTimeLeft,
     sendMessage
   } = useWebSocket(user);
 
-  // 인증 버튼 클릭 핸들러
+  useEffect(() => {
+    if (socket) {
+      const handleMessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'user_count' && user) {
+          setUserCount(data.count);
+        }
+        // 다른 메시지 처리...
+      };
+
+      socket.addEventListener('message', handleMessage);
+
+      return () => {
+        socket.removeEventListener('message', handleMessage);
+      };
+    }
+  }, [socket, user]);
+
   const handleAuthButton = (type) => {
     setAuthType(type);
     setShowAuthModal(true);
   };
 
-  // 모달 닫기 핸들러
   const handleCloseModal = () => {
     setShowAuthModal(false);
     setAuthType(null);
   };
 
-  // 로그인 성공 핸들러
   const handleLoginSuccess = useCallback((userData) => {
     console.log('Login successful:', userData);
     setUser(userData);
     handleCloseModal();
   }, []);
 
-  // 로그아웃 핸들러
   const handleLogout = () => {
     setUser(null);
+    setUserCount(0);
     if (socket) {
       socket.close(1000, "Logout");
     }
   };
 
-  // 세션 만료 핸들러
   const handleSessionExpired = () => {
     setShowSessionExpiredModal(false);
     handleLogout();
@@ -70,7 +81,7 @@ function AppContent() {
       </div>
       <aside className="side-container">
         <header className="side-header">
-          <div className="user-count">현재 접속자 수: {userCount}</div>
+          <div className="user-count">현재 접속자 수: {user ? userCount : 0}</div>
           <div className="header-buttons">
             {user ? (
               <>
@@ -95,7 +106,6 @@ function AppContent() {
           sendMessage={sendMessage}
         />
       </aside>
-      {/* 인증 모달 */}
       {showAuthModal && (
         <div className="modal-backdrop">
           <AuthModal 
@@ -105,7 +115,6 @@ function AppContent() {
           />
         </div>
       )}
-      {/* 세션 만료 모달 */}
       {showSessionExpiredModal && (
         <div className="modal-backdrop">
           <div className="session-expired-modal">
@@ -118,7 +127,6 @@ function AppContent() {
   );
 }
 
-// App 컴포넌트: ThemeProvider로 AppContent를 감싸 테마 기능 제공
 function App() {
   return (
     <ThemeProvider>

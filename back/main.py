@@ -102,7 +102,6 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                 break
     finally:
         await manager.disconnect(user_id)
-        await manager.broadcast(json.dumps({"type": "system", "message": f"{username}님이 퇴장하셨습니다."}), "system", "System")
 
 if __name__ == "__main__":
     import uvicorn
