@@ -165,10 +165,11 @@
   border-bottom-left-radius: 5px;
 }
 
+/* 수정: 메시지 사용자 이름 스타일 변경 */
 .message-username {
   font-weight: bold;
   margin-right: 8px;
-  color: #2c3e50;
+  color: #2ecc71; /* 초록색 계통으로 변경 */
 }
 
 .system-message {
@@ -181,9 +182,10 @@
   margin: 10px 0;
 }
 
+/* 수정: 사용자 닉네임 스타일 변경 */
 .user-nickname {
-  background-color: #e0f7fa;
-  color: #006064;
+  background-color: #2ecc71; /* 초록색 계통으로 변경 */
+  color: #ffffff;
   padding: 6px 12px;
   border-radius: 15px;
   font-weight: bold;
@@ -192,9 +194,10 @@
   transition: all 0.3s ease;
 }
 
+/* 수정: 다크 모드에서 사용자 닉네임 스타일 */
 .dark-mode .user-nickname {
-  background-color: #263238;
-  color: #81d4fa;
+  background-color: #2ecc71; /* 다크 모드에서도 같은 색상 유지 */
+  color: #ffffff;
 }
 
 .session-expired-modal {
@@ -229,4 +232,9 @@
 
 .chat-input input.chat-banned::placeholder {
   color: #e74c3c;
+}
+
+/* 수정: 다크 모드에서 메시지 사용자 이름 스타일 */
+.dark-mode .message-username {
+  color: #3cff8d; /* 다크 모드에서도 같은 색상 유지 */
 }

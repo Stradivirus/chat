@@ -299,6 +299,17 @@ body {
   color: #2d3748;
 }
 
+.error {
+  color: #e53e3e;
+  font-size: 0.9rem;
+  margin-top: -15px;
+  margin-bottom: 15px;
+  background-color: #fff5f5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 4px solid #e53e3e;
+}
+
 /* Dark mode styles */
 .dark-mode {
   background-color: #1a202c;
@@ -326,19 +337,16 @@ body {
   background-color: #2b6cb0;
 }
 
-.dark-mode .chat-input,
 .dark-mode .auth-modal {
   background-color: #2d3748;
 }
 
-.dark-mode .chat-input input,
 .dark-mode .auth-modal input {
   background-color: #4a5568;
   color: #e2e8f0;
   border-color: #718096;
 }
 
-.dark-mode .chat-input input:focus,
 .dark-mode .auth-modal input:focus {
   border-color: #63b3ed;
   box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.25);
@@ -381,19 +389,18 @@ body {
   color: #e2e8f0;
 }
 
-.error {
-  color: #e53e3e;
-  font-size: 0.9rem;
-  margin-top: -15px;
-  margin-bottom: 15px;
-  background-color: #fff5f5;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border-left: 4px solid #e53e3e;
-}
-
 .dark-mode .error {
   color: #fc8181;
   background-color: #3b1818;
   border-left-color: #fc8181;
+}
+
+.dark-mode .chat-input {
+  background-color: #ffffff;
+}
+
+.dark-mode .chat-input input {
+  background-color: #ffffff;
+  color: #333;
+  border-color: #e2e8f0;
 }
