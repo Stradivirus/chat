@@ -1,12 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 
+// ChatMessages 컴포넌트: 채팅 메시지를 표시하는 컴포넌트
 function ChatMessages({ messages, currentUserId }) {
+  // messagesEndRef: 메시지 목록의 끝을 참조하기 위한 ref
   const messagesEndRef = useRef(null);
 
+  // scrollToBottom: 메시지 목록의 맨 아래로 스크롤하는 함수
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // useEffect: messages 배열이 변경될 때마다 스크롤을 아래로 이동
   useEffect(scrollToBottom, [messages]);
 
   return (
@@ -42,6 +46,7 @@ function ChatMessages({ messages, currentUserId }) {
             key={index} 
             className={`message ${sender === currentUserId ? 'user' : 'other'}`}
           >
+            {/* 다른 사용자의 메시지인 경우 사용자 이름 표시 */}
             {sender !== currentUserId && (
               <span className="message-username"><strong>{username || 'Anonymous'}</strong> </span>
             )}
@@ -49,6 +54,7 @@ function ChatMessages({ messages, currentUserId }) {
           </div>
         );
       })}
+      {/* 메시지 목록의 끝을 참조하는 빈 div */}
       <div ref={messagesEndRef} />
     </div>
   );

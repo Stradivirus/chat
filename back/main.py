@@ -32,15 +32,18 @@ manager = ConnectionManager()
 
 @app.on_event("startup")
 async def startup_event():
+    # 애플리케이션 시작 시 데이터베이스 연결 및 백그라운드 작업 시작
     await postgres_manager.start()
     start_background_tasks(manager)
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    # 애플리케이션 종료 시 데이터베이스 연결 해제 및 백그라운드 작업 중지
     await postgres_manager.stop()
     stop_background_tasks(manager)
 
 class UserRegister(BaseModel):
+    # 사용자 등록 데이터 모델
     email: str = Field(..., min_length=1)
     username: str = Field(..., min_length=1)
     nickname: str = Field(..., min_length=1)
@@ -49,6 +52,7 @@ class UserRegister(BaseModel):
 @app.post("/register")
 @handle_error
 async def register(user: UserRegister):
+    # 사용자 등록 및 자동 로그인 처리
     success, message = await postgres_manager.register_user(user.username, user.password, user.email, user.nickname)
     if not success:
         raise HTTPException(status_code=400, detail=message)
@@ -58,12 +62,14 @@ async def register(user: UserRegister):
     return {"message": "Registration and login successful", "user_id": login_result, "username": user.username}
 
 class LoginData(BaseModel):
+    # 로그인 데이터 모델
     username: str = Field(..., min_length=1)
     password: str = Field(..., min_length=1)
 
 @app.post("/login")
 @handle_error
 async def login(login_data: LoginData):
+    # 사용자 로그인 처리
     success, result = await postgres_manager.login_user(login_data.username, login_data.password)
     if not success:
         raise HTTPException(status_code=400, detail=result)
@@ -72,11 +78,13 @@ async def login(login_data: LoginData):
 @app.get("/recent_messages")
 @handle_error
 async def get_recent_messages(limit: int = 50):
+    # 최근 메시지 조회
     messages = await postgres_manager.get_recent_messages(limit)
     return {"messages": messages}
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    # WebSocket 연결 처리
     user = await postgres_manager.get_user_by_id(user_id)
     if not user:
         await websocket.close(code=4000)
