@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 // WebSocket 서버 URL
-const WS_URL = 'ws://218.156.126.186:8000/ws';
+const WS_URL = 'ws://localhost:8000/ws';
 
 // useWebSocket 커스텀 훅: WebSocket 연결 및 관련 기능을 관리
 export function useWebSocket(user) {

@@ -17,7 +17,6 @@ class ConnectionManager:
         self.spam_window = 5
         self.spam_threshold = 4
         self.background_tasks: Set = set()
-        self.user_count = 0
 
     async def connect(self, websocket: WebSocket, sender_id: str, username: str):
         await websocket.accept()
@@ -69,7 +68,9 @@ class ConnectionManager:
             "username": username,
             "timestamp": int(current_time * 1000)
         }
-        await redis_manager.publish_message("chat", json.dumps(message_data))
+        await redis_manager.add_message(sender_id, message, username)
+        for connection in self.active_connections.values():
+            await connection.send_json(message_data)
 
     def is_spam(self, sender_id: str):
         if len(self.user_messages[sender_id]) < self.spam_threshold:
@@ -83,7 +84,6 @@ class ConnectionManager:
     async def ban_user(self, sender_id: str):
         ban_duration = 20
         self.user_ban_until[sender_id] = time.time() + ban_duration
-        await redis_manager.add_user_to_ban_list(sender_id, ban_duration)
 
     async def is_user_banned(self, sender_id: str) -> bool:
         if sender_id in self.user_ban_until:
@@ -92,36 +92,44 @@ class ConnectionManager:
                 self.user_messages[sender_id].clear()
                 return False
             return True
-        return await redis_manager.is_user_banned(sender_id)
+        return False
 
-    async def handle_redis_messages(self):
-        pubsub = await redis_manager.subscribe("chat")
+    async def send_user_count_update(self, websocket: WebSocket):
+        user_count = await redis_manager.get_active_connections_count()
+        await websocket.send_json({"type": "user_count", "count": user_count})
+
+    async def check_connections(self):
         while True:
             try:
-                message = await pubsub.get_message(ignore_subscribe_messages=True)
-                if message is not None and message['type'] == 'message':
-                    message_data = json.loads(message['data'])
-                    for sender_id, connection in list(self.active_connections.items()):
-                        try:
-                            await connection.send_json(message_data)
-                        except Exception as e:
-                            logger.error(f"Error sending message to user {sender_id}: {e}")
-                            await self.disconnect(sender_id)
-                await asyncio.sleep(0.01)
+                for sender_id, connection in list(self.active_connections.items()):
+                    try:
+                        await connection.send_json({"type": "ping"})
+                    except Exception:
+                        await self.disconnect(sender_id)
+                await asyncio.sleep(60)
             except Exception as e:
-                logger.error(f"Error in Redis message handling: {e}")
-                await asyncio.sleep(1)  # Wait before trying to reconnect
+                logger.error(f"Error in check connections: {e}")
+                await asyncio.sleep(5)
 
-    async def start_redis_listener(self):
-        self.background_tasks.add(asyncio.create_task(self.handle_redis_messages()))
+    async def cleanup_old_data(self):
+        while True:
+            try:
+                current_time = time.time()
+                for sender_id in list(self.user_messages.keys()):
+                    if not self.user_messages[sender_id] or current_time - self.user_messages[sender_id][-1][1] > 3600:
+                        del self.user_messages[sender_id]
+                    if sender_id in self.user_ban_until and current_time >= self.user_ban_until[sender_id]:
+                        del self.user_ban_until[sender_id]
+                await asyncio.sleep(3600)
+            except Exception as e:
+                logger.error(f"Error in cleanup old data: {e}")
+                await asyncio.sleep(60)
 
-    def stop_redis_listener(self):
+    def start_background_tasks(self):
+        self.background_tasks.add(asyncio.create_task(self.check_connections()))
+        self.background_tasks.add(asyncio.create_task(self.cleanup_old_data()))
+
+    def stop_background_tasks(self):
         for task in self.background_tasks:
             task.cancel()
         self.background_tasks.clear()
-
-    def update_user_count(self, count: int):
-        self.user_count = count
-
-    async def send_user_count_update(self, websocket: WebSocket):
-        await websocket.send_json({"type": "user_count", "count": self.user_count})

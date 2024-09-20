@@ -86,9 +86,6 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     try:
         while True:
             data = await websocket.receive_json()
-            if await redis_manager.is_user_banned(user_id):
-                await websocket.send_json({"type": "error", "message": "You are banned from sending messages"})
-                continue
             await manager.broadcast(data['message'], user_id, username)
     except WebSocketDisconnect:
         await manager.disconnect(user_id)
