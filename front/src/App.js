@@ -8,12 +8,14 @@ import './styles/components.css';
 import './styles/utilities.css';
 
 function AppContent() {
+  // 상태 관리
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authType, setAuthType] = useState(null);
   const { isDarkMode, toggleTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [userCount, setUserCount] = useState(0);
 
+  // 웹소켓 커스텀 훅 사용
   const {
     socket,
     showSessionExpiredModal,
@@ -22,6 +24,7 @@ function AppContent() {
     sendMessage
   } = useWebSocket(user);
 
+  // 웹소켓 메시지 처리
   useEffect(() => {
     if (socket) {
       const handleMessage = (event) => {
@@ -40,22 +43,26 @@ function AppContent() {
     }
   }, [socket]);
 
+  // 인증 모달 표시 함수
   const handleAuthButton = (type) => {
     setAuthType(type);
     setShowAuthModal(true);
   };
 
+  // 모달 닫기 함수
   const handleCloseModal = () => {
     setShowAuthModal(false);
     setAuthType(null);
   };
 
+  // 로그인 성공 처리 함수
   const handleLoginSuccess = useCallback((userData) => {
     console.log('Login successful:', userData);
     setUser(userData);
     handleCloseModal();
   }, []);
 
+  // 로그아웃 처리 함수
   const handleLogout = () => {
     setUser(null);
     setUserCount(0);
@@ -64,6 +71,7 @@ function AppContent() {
     }
   };
 
+  // 세션 만료 처리 함수
   const handleSessionExpired = () => {
     setShowSessionExpiredModal(false);
     handleLogout();
@@ -106,6 +114,7 @@ function AppContent() {
           sendMessage={sendMessage}
         />
       </aside>
+      {/* 인증 모달 */}
       {showAuthModal && (
         <div className="modal-backdrop">
           <AuthModal 
@@ -115,6 +124,7 @@ function AppContent() {
           />
         </div>
       )}
+      {/* 세션 만료 모달 */}
       {showSessionExpiredModal && (
         <div className="modal-backdrop">
           <div className="session-expired-modal">

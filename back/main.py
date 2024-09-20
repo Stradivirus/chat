@@ -11,8 +11,10 @@ from background_tasks import start_background_tasks, stop_background_tasks
 import json
 import asyncio
 
+# FastAPI 애플리케이션 인스턴스 생성
 app = FastAPI()
 
+# CORS 미들웨어 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,24 +23,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ConnectionManager 인스턴스 생성
 manager = ConnectionManager()
 
 @app.on_event("startup")
 async def startup_event():
+    """애플리케이션 시작 시 실행되는 이벤트 핸들러"""
     await postgres_manager.start()
     await redis_manager.connect()
     start_background_tasks(manager)
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    """애플리케이션 종료 시 실행되는 이벤트 핸들러"""
     await postgres_manager.stop()
     await redis_manager.disconnect()
     stop_background_tasks(manager)
 
 class UserRegister(BaseModel):
+    """사용자 등록을 위한 Pydantic 모델"""
     email: str = Field(..., min_length=1)
     username: str = Field(..., min_length=1)
     nickname: str = Field(..., min_length=1)
@@ -47,6 +54,7 @@ class UserRegister(BaseModel):
 @app.post("/register")
 @handle_error
 async def register(user: UserRegister):
+    """사용자 등록 엔드포인트"""
     success, message = await postgres_manager.register_user(user.username, user.password, user.email, user.nickname)
     if not success:
         raise HTTPException(status_code=400, detail=message)
@@ -56,12 +64,14 @@ async def register(user: UserRegister):
     return {"message": "Registration and login successful", "user_id": login_result, "username": user.username}
 
 class LoginData(BaseModel):
+    """로그인을 위한 Pydantic 모델"""
     username: str = Field(..., min_length=1)
     password: str = Field(..., min_length=1)
 
 @app.post("/login")
 @handle_error
 async def login(login_data: LoginData):
+    """로그인 엔드포인트"""
     success, result = await postgres_manager.login_user(login_data.username, login_data.password)
     if not success:
         raise HTTPException(status_code=400, detail=result)
@@ -70,11 +80,13 @@ async def login(login_data: LoginData):
 @app.get("/recent_messages")
 @handle_error
 async def get_recent_messages(limit: int = 50):
+    """최근 메시지를 가져오는 엔드포인트"""
     messages = await redis_manager.get_recent_messages(limit)
     return {"messages": messages}
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    """WebSocket 연결을 처리하는 엔드포인트"""
     user = await postgres_manager.get_user_by_id(user_id)
     if not user:
         await websocket.close(code=4000)

@@ -11,6 +11,7 @@ class PostgresManager:
         self.logger = logging.getLogger(__name__)
 
     async def start(self):
+        """데이터베이스 연결 풀을 생성하고 테이블을 초기화하는 메서드"""
         self.pool = await asyncpg.create_pool(
             user='chat_admin',
             password='1q2w3e4r!!',
@@ -21,10 +22,13 @@ class PostgresManager:
         await self.create_tables()
 
     async def stop(self):
+        """데이터베이스 연결 풀을 종료하는 메서드"""
         await self.pool.close()
 
     async def create_tables(self):
+        """필요한 테이블과 인덱스를 생성하는 메서드"""
         async with self.pool.acquire() as conn:
+            # users 테이블 생성
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS users (
                     id UUID PRIMARY KEY,
@@ -36,6 +40,7 @@ class PostgresManager:
                 )
             ''')
             
+            # user_sessions 테이블 생성 (파티션 테이블)
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS user_sessions (
                     id UUID NOT NULL,
@@ -47,6 +52,7 @@ class PostgresManager:
                 ) PARTITION BY RANGE (login_time)
             ''')
             
+            # messages 테이블 생성 (파티션 테이블)
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS messages (
                     id UUID NOT NULL,
@@ -57,6 +63,7 @@ class PostgresManager:
                 ) PARTITION BY RANGE (created_at)
             ''')
             
+            # 파티션 생성 함수 정의
             await conn.execute('''
                 CREATE OR REPLACE FUNCTION create_time_partition(table_name text, date date)
                 RETURNS void AS $$
@@ -73,6 +80,7 @@ class PostgresManager:
                 $$ LANGUAGE plpgsql;
             ''')
             
+            # 초기 파티션 생성
             await conn.execute('''
                 DO $$
                 DECLARE
@@ -85,6 +93,7 @@ class PostgresManager:
                 END $$;
             ''')
             
+            # 인덱스 생성
             await conn.execute('''
                 CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
                 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
@@ -94,6 +103,7 @@ class PostgresManager:
             ''')
 
     async def ensure_partition_exists(self, table_name: str, date: datetime.date):
+        """지정된 날짜에 대한 파티션이 존재하는지 확인하고, 없으면 생성하는 메서드"""
         async with self.pool.acquire() as conn:
             partition_name = f"{table_name}_{date.strftime('%Y_%m_%d')}"
             partition_exists = await conn.fetchval(
@@ -109,6 +119,7 @@ class PostgresManager:
                     )
 
     async def register_user(self, username: str, password: str, email: str, nickname: str):
+        """새 사용자를 등록하는 메서드"""
         try:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             async with self.pool.acquire() as conn:
@@ -126,15 +137,16 @@ class PostgresManager:
             return False, "Error registering user"
 
     async def login_user(self, username: str, password: str):
+        """사용자 로그인을 처리하는 메서드"""
         try:
             async with self.pool.acquire() as conn:
                 user = await conn.fetchrow(
                     'SELECT id, password FROM users WHERE username = $1',
                     username
                 )
-                if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-                    self.logger.info(f"Successful login for username: {username}")
-                    return True, str(user['id'])
+            if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+                self.logger.info(f"Successful login for username: {username}")
+                return True, str(user['id'])
             self.logger.warning(f"Failed login attempt for username: {username}")
             return False, "Invalid username or password"
         except Exception as e:
@@ -142,6 +154,7 @@ class PostgresManager:
             return False, "Error during login"
 
     async def save_message(self, sender_id: str, content: str):
+        """메시지를 저장하는 메서드"""
         try:
             message_date = datetime.now().date()
             await self.ensure_partition_exists('messages', message_date)
@@ -156,6 +169,7 @@ class PostgresManager:
             return False
 
     async def save_user_session(self, user_id: str, ip_address: str):
+        """사용자 세션을 저장하는 메서드"""
         try:
             session_date = datetime.now().date()
             await self.ensure_partition_exists('user_sessions', session_date)
@@ -170,6 +184,7 @@ class PostgresManager:
             return False
 
     async def get_recent_messages(self, limit: int = 50) -> List[Dict]:
+        """최근 메시지를 가져오는 메서드"""
         try:
             async with self.pool.acquire() as conn:
                 rows = await conn.fetch('''
@@ -185,20 +200,22 @@ class PostgresManager:
             return []
 
     async def get_user_by_id(self, user_id: str):
+        """사용자 ID로 사용자 정보를 가져오는 메서드"""
         try:
             async with self.pool.acquire() as conn:
                 user = await conn.fetchrow(
                     'SELECT id, username FROM users WHERE id = $1',
                     uuid.UUID(user_id)
                 )
-                if user:
-                    return {"id": str(user['id']), "username": user['username']}
+            if user:
+                return {"id": str(user['id']), "username": user['username']}
             return None
         except Exception as e:
             self.logger.error(f"Error fetching user by ID: {e}")
             return None
 
     async def save_messages_from_redis(self, messages: List[Dict]):
+        """Redis에서 가져온 메시지를 PostgreSQL에 저장하는 메서드"""
         try:
             async with self.pool.acquire() as conn:
                 for message in messages:
@@ -206,7 +223,7 @@ class PostgresManager:
                     await self.ensure_partition_exists('messages', message_date)
                     await conn.execute(
                         'INSERT INTO messages (id, sender_id, content, created_at) VALUES ($1, $2, $3, $4)',
-                        uuid.uuid4(), uuid.UUID(message['sender_id']), message['content'], 
+                        uuid.uuid4(), uuid.UUID(message['sender_id']), message['content'],
                         datetime.fromtimestamp(message['timestamp'])
                     )
             return True
