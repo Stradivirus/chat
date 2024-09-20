@@ -46,4 +46,8 @@ class RedisManager:
     async def get_active_connections_count(self) -> int:
         return await self.redis.scard("active_connections")
 
+    async def clear_synced_messages(self, count: int):
+        """동기화된 메시지를 Redis에서 제거합니다."""
+        await self.redis.ltrim("all_messages", count, -1)
+
 redis_manager = RedisManager()

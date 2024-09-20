@@ -45,10 +45,30 @@ async def check_connections(manager):
             logger.error(f"Error in check connections: {e}", exc_info=True)
             await asyncio.sleep(5)
 
+async def sync_redis_to_postgres():
+    last_sync_time = asyncio.get_event_loop().time()
+    while True:
+        try:
+            current_time = asyncio.get_event_loop().time()
+            messages = await redis_manager.get_recent_messages(50)
+            if len(messages) >= 50 or current_time - last_sync_time >= 10:
+                success = await postgres_manager.save_messages_from_redis(messages)
+                if success:
+                    await redis_manager.clear_synced_messages(len(messages))
+                    last_sync_time = current_time
+                    logger.info(f"Synced {len(messages)} messages to PostgreSQL")
+                else:
+                    logger.error("Failed to sync messages to PostgreSQL")
+            await asyncio.sleep(1)
+        except Exception as e:
+            logger.error(f"Error in sync_redis_to_postgres: {e}", exc_info=True)
+            await asyncio.sleep(5)
+
 def start_background_tasks(manager):
     manager.background_tasks.add(asyncio.create_task(periodic_user_count_update(manager)))
     manager.background_tasks.add(asyncio.create_task(cleanup_old_data(manager)))
     manager.background_tasks.add(asyncio.create_task(check_connections(manager)))
+    manager.background_tasks.add(asyncio.create_task(sync_redis_to_postgres()))
 
 def stop_background_tasks(manager):
     for task in manager.background_tasks:
