@@ -16,6 +16,10 @@ class RedisManager:
         if self.redis is not None:
             await self.redis.close()
 
+    async def startup_event():
+        await redis_manager.connect()
+        await redis_manager.redis.delete("active_connections")
+
     async def add_message(self, sender_id: str, message: str, username: str):
         """새 메시지를 Redis에 추가하는 메서드"""
         message_data = {

@@ -36,6 +36,7 @@ async def startup_event():
     await postgres_manager.start()
     await redis_manager.connect()
     start_background_tasks(manager)
+    await redis_manager.redis.delete("active_connections")
 
 @app.on_event("shutdown")
 async def shutdown_event():

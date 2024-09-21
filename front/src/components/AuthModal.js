@@ -6,7 +6,7 @@ import '../styles/AuthModal.css';
 // baseURL을 설정하여 모든 요청의 기본 URL을 지정
 // withCredentials를 true로 설정하여 쿠키를 포함한 크로스 도메인 요청을 가능하게 함
 const api = axios.create({
-  baseURL: 'http://localhost:8000/',
+  baseURL: 'http://218.156.126.186:8000/',
   withCredentials: true // CORS 관련 설정
 });
 
