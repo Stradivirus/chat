@@ -35,8 +35,8 @@ async def startup_event():
     """애플리케이션 시작 시 실행되는 이벤트 핸들러"""
     await postgres_manager.start()
     await redis_manager.connect()
+    await redis_manager.redis.delete("active_connections")  # active_connections 초기화
     start_background_tasks(manager)
-    await redis_manager.redis.delete("active_connections")
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -62,7 +62,7 @@ async def register(user: UserRegister):
     login_success, login_result = await postgres_manager.login_user(user.username, user.password)
     if not login_success:
         raise HTTPException(status_code=400, detail="Registration successful, but auto-login failed")
-    return {"message": "Registration and login successful", "user_id": login_result, "username": user.username}
+    return {"message": "Registration and login successful", "user_id": login_result["user_id"], "username": user.username, "nickname": login_result["nickname"]}
 
 class LoginData(BaseModel):
     """로그인을 위한 Pydantic 모델"""
@@ -76,7 +76,7 @@ async def login(login_data: LoginData):
     success, result = await postgres_manager.login_user(login_data.username, login_data.password)
     if not success:
         raise HTTPException(status_code=400, detail=result)
-    return {"message": "Login successful", "user_id": result, "username": login_data.username}
+    return {"message": "Login successful", "user_id": result["user_id"], "username": login_data.username, "nickname": result["nickname"]}
 
 @app.get("/recent_messages")
 @handle_error
@@ -94,12 +94,13 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
         return
 
     username = user['username']
-    await manager.connect(websocket, user_id, username)
+    nickname = user['nickname']
+    await manager.connect(websocket, user_id, username, nickname)
 
     try:
         while True:
             data = await websocket.receive_json()
-            await manager.broadcast(data['message'], user_id, username)
+            await manager.broadcast(data['message'], user_id, username, nickname)
     except WebSocketDisconnect:
         await manager.disconnect(user_id)
     except Exception as e:

@@ -16,16 +16,13 @@ class RedisManager:
         if self.redis is not None:
             await self.redis.close()
 
-    async def startup_event():
-        await redis_manager.connect()
-        await redis_manager.redis.delete("active_connections")
-
-    async def add_message(self, sender_id: str, message: str, username: str):
+    async def add_message(self, sender_id: str, message: str, username: str, nickname: str):
         """새 메시지를 Redis에 추가하는 메서드"""
         message_data = {
             "content": message,
             "sender_id": sender_id,
             "username": username,
+            "nickname": nickname,
             "timestamp": time.time()
         }
         # 사용자별 메시지 저장 (최근 50개)

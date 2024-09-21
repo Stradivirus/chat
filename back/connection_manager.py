@@ -17,20 +17,23 @@ class ConnectionManager:
         self.user_messages: Dict[str, deque] = defaultdict(lambda: deque(maxlen=4))
         # 사용자 차단 정보를 저장하는 딕셔너리
         self.user_ban_until: Dict[str, float] = {}
+        # 사용자 닉네임을 저장하는 딕셔너리
+        self.user_nicknames: Dict[str, str] = {}
         # 스팸 감지를 위한 설정
         self.spam_window = 5
         self.spam_threshold = 4
         # 백그라운드 태스크를 저장하는 집합
         self.background_tasks: Set = set()
 
-    async def connect(self, websocket: WebSocket, sender_id: str, username: str):
+    async def connect(self, websocket: WebSocket, sender_id: str, username: str, nickname: str):
         """새로운 웹소켓 연결을 처리하는 메서드"""
         await websocket.accept()
         if sender_id in self.active_connections:
             await self.disconnect_previous_session(sender_id)
         self.active_connections[sender_id] = websocket
+        self.user_nicknames[sender_id] = nickname
         await redis_manager.add_active_connection(sender_id)
-        logger.info(f"User {username} (ID: {sender_id}) connected. Total connections: {len(self.active_connections)}")
+        logger.info(f"User {username} (ID: {sender_id}, Nickname: {nickname}) connected. Total connections: {len(self.active_connections)}")
         await self.send_user_count_update(websocket)
 
     async def disconnect_previous_session(self, sender_id: str):
@@ -47,10 +50,12 @@ class ConnectionManager:
         """웹소켓 연결을 종료하는 메서드"""
         if sender_id in self.active_connections:
             del self.active_connections[sender_id]
+            if sender_id in self.user_nicknames:
+                del self.user_nicknames[sender_id]
             await redis_manager.remove_active_connection(sender_id)
             logger.info(f"User {sender_id} disconnected. Total connections: {len(self.active_connections)}")
 
-    async def broadcast(self, message: str, sender_id: str, username: str):
+    async def broadcast(self, message: str, sender_id: str, username: str, nickname: str):
         """메시지를 모든 연결된 클라이언트에게 브로드캐스트하는 메서드"""
         if await self.is_user_banned(sender_id):
             ban_time_left = int(self.user_ban_until[sender_id] - time.time())
@@ -75,9 +80,10 @@ class ConnectionManager:
             "message": message,
             "sender_id": sender_id,
             "username": username,
+            "nickname": nickname,
             "timestamp": int(current_time * 1000)
         }
-        await redis_manager.add_message(sender_id, message, username)
+        await redis_manager.add_message(sender_id, message, username, nickname)
         for connection in self.active_connections.values():
             await connection.send_json(message_data)
 
