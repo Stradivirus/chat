@@ -89,3 +89,14 @@
 .switch-auth-type:hover {
   text-decoration: underline;
 }
+
+.error {
+  color: #e53e3e;
+  font-size: 0.9rem;
+  margin-top: -15px;
+  margin-bottom: 15px;
+  background-color: #fff5f5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 4px solid #e53e3e;
+}

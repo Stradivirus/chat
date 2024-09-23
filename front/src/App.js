@@ -63,11 +63,11 @@ function App() {
         
         </main>
       </div>
-      <aside className="side-container">
+      <div className="side-container">
         <header className="side-header">
-          <div className="user-count">현재 접속자 수: {userCount}</div>
+          <span className="user-count">현재 접속자 수: {userCount}</span>
           {user && (
-            <div className="user-info">
+            <div>
               <span className="user-nickname">{user.username}님</span>
               <button onClick={handleLogout} className="logout-button">로그아웃</button>
             </div>
@@ -83,7 +83,7 @@ function App() {
         ) : (
           <div className="login-message">로그인이 필요합니다.</div>
         )}
-      </aside>
+      </div>
       {!user && (
         <div className="modal-backdrop">
           <AuthModal 
