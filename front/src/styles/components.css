@@ -1,52 +1,5 @@
 /* components.css */
 
-/* 헤더 버튼 스타일 */
-.header-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.header-buttons button {
-  padding: 8px 15px;
-  cursor: pointer;
-  border: none;
-  border-radius: 20px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  font-size: 0.70rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.theme-toggle {
-  background-color: #6c757d;
-  color: #ffffff;
-}
-
-.theme-toggle:hover {
-  background-color: #5a6268;
-  transform: translateY(-2px);
-}
-
-.header-buttons button:not(.theme-toggle):not(.logout-button) {
-  background-color: #3498db;
-  color: #ffffff;
-}
-
-.header-buttons button:not(.theme-toggle):not(.logout-button):hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-}
-
-.logout-button {
-  background-color: #e74c3c !important;
-  color: #ffffff;
-}
-
-.logout-button:hover {
-  background-color: #c0392b !important;
-  transform: translateY(-2px);
-}
-
 /* 사용자 카운트 스타일 */
 .user-count {
   font-weight: 600;
@@ -73,7 +26,7 @@
 /* 채팅 페이지 스타일 */
 .chat-page {
   height: calc(100% - 50px);
-  background-color: #ffffff;
+  background-color: #f0f2f5;  /* 채팅창 배경색을 옅은 회색으로 변경 */
   display: flex;
   flex-direction: column;
 }
@@ -91,7 +44,7 @@
 .chat-input {
   display: flex;
   padding: 15px;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   border-top: 1px solid #e1e4e8;
 }
 
@@ -272,16 +225,6 @@
   margin-top: 50px;
 }
 
-/* 다크 모드 스타일 */
-.dark-mode .message-username {
-  color: #3cff8d;
-}
-
-.dark-mode .user-nickname {
-  background-color: #2ecc71;
-  color: #ffffff;
-}
-
 /* 레이아웃 관련 스타일 */
 .side-container {
   display: flex;
@@ -309,6 +252,21 @@
   flex-shrink: 0;
 }
 
-.dark-mode .header-buttons button {
-  font-size: 0.6rem; /* 다크 모드에서의 글씨 크기 */
+.logout-button {
+  background-color: #e74c3c;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.logout-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }

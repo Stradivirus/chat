@@ -8,7 +8,7 @@ const api = axios.create({
   withCredentials: true
 });
 
-function AuthModal({ type, onClose, onLoginSuccess, onSwitchAuthType }) {
+function AuthModal({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [nickname, setNickname] = useState('');
@@ -16,11 +16,12 @@ function AuthModal({ type, onClose, onLoginSuccess, onSwitchAuthType }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
 
   const validateForm = () => {
     const newErrors = {};
     
-    if (type === 'register') {
+    if (!isLoginMode) {
       if (!email || !/\S+@\S+\.\S+/.test(email)) {
         newErrors.email = '유효한 이메일 주소를 입력해주세요.';
       }
@@ -49,7 +50,7 @@ function AuthModal({ type, onClose, onLoginSuccess, onSwitchAuthType }) {
       setIsLoading(true);
       try {
         let response;
-        if (type === 'login') {
+        if (isLoginMode) {
           response = await api.post(URLS.LOGIN, { username, password });
           console.log('Login response:', response.data);
           if (response.data && response.data.user_id) {
@@ -71,7 +72,6 @@ function AuthModal({ type, onClose, onLoginSuccess, onSwitchAuthType }) {
           }
         }
         setIsLoading(false);
-        onClose();
       } catch (error) {
         console.error('Error:', error.response ? error.response.data : error.message);
         setErrors({ api: error.response ? error.response.data.detail : '서버 오류가 발생했습니다.' });
@@ -80,11 +80,16 @@ function AuthModal({ type, onClose, onLoginSuccess, onSwitchAuthType }) {
     }
   };
 
+  const toggleMode = () => {
+    setIsLoginMode(!isLoginMode);
+    setErrors({});
+  };
+
   return (
     <div className="auth-modal">
-      <h2>{type === 'login' ? '로그인' : '회원가입'}</h2>
+      <h2>{isLoginMode ? '로그인' : '회원가입'}</h2>
       <form onSubmit={handleSubmit}>
-        {type === 'register' && (
+        {!isLoginMode && (
           <>
             <input
               type="email"
@@ -120,7 +125,7 @@ function AuthModal({ type, onClose, onLoginSuccess, onSwitchAuthType }) {
           required
         />
         {errors.password && <p className="error">{errors.password}</p>}
-        {type === 'register' && (
+        {!isLoginMode && (
           <>
             <input
               type="password"
@@ -134,13 +139,12 @@ function AuthModal({ type, onClose, onLoginSuccess, onSwitchAuthType }) {
         )}
         {errors.api && <p className="error">{errors.api}</p>}
         <button type="submit" disabled={isLoading}>
-          {isLoading ? '처리 중...' : (type === 'login' ? '로그인' : '회원가입')}
+          {isLoading ? '처리 중...' : (isLoginMode ? '로그인' : '회원가입')}
         </button>
       </form>
-      <button onClick={() => onSwitchAuthType(type === 'login' ? 'register' : 'login')} className="switch-auth-type">
-        {type === 'login' ? '회원가입' : '로그인'}
+      <button onClick={toggleMode} className="switch-auth-type">
+        {isLoginMode ? '회원가입' : '로그인'}
       </button>
-      <button onClick={onClose} className="close-button">&times;</button>
     </div>
   );
 }
