@@ -8,7 +8,7 @@ const api = axios.create({
   withCredentials: true
 });
 
-function AuthModal({ type, onClose, onLoginSuccess }) {
+function AuthModal({ type, onClose, onLoginSuccess, onSwitchAuthType }) {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [nickname, setNickname] = useState('');
@@ -53,18 +53,10 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
           response = await api.post(URLS.LOGIN, { username, password });
           console.log('Login response:', response.data);
           if (response.data && response.data.user_id) {
-            setTimeout(() => {
-              if (typeof onLoginSuccess === 'function') {
-                onLoginSuccess({
-                  userId: response.data.user_id,
-                  username: username
-                });
-              } else {
-                console.error('onLoginSuccess is not a function');
-              }
-              setIsLoading(false);
-              onClose();
-            }, 500);
+            onLoginSuccess({
+              userId: response.data.user_id,
+              username: username
+            });
           } else {
             throw new Error('Invalid server response');
           }
@@ -72,18 +64,14 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
           response = await api.post(URLS.REGISTER, { email, username, nickname, password });
           console.log('Registration successful:', response.data);
           if (response.data && response.data.user_id) {
-            if (typeof onLoginSuccess === 'function') {
-              onLoginSuccess({
-                userId: response.data.user_id,
-                username: username
-              });
-            } else {
-              console.error('onLoginSuccess is not a function');
-            }
+            onLoginSuccess({
+              userId: response.data.user_id,
+              username: username
+            });
           }
-          setIsLoading(false);
-          onClose();
         }
+        setIsLoading(false);
+        onClose();
       } catch (error) {
         console.error('Error:', error.response ? error.response.data : error.message);
         setErrors({ api: error.response ? error.response.data.detail : '서버 오류가 발생했습니다.' });
@@ -96,26 +84,6 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
     <div className="auth-modal">
       <h2>{type === 'login' ? '로그인' : '회원가입'}</h2>
       <form onSubmit={handleSubmit}>
-        {type === 'login' && (
-          <>
-            <input
-              type="text"
-              placeholder="아이디"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            {errors.username && <p className="error">{errors.username}</p>}
-            <input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {errors.password && <p className="error">{errors.password}</p>}
-          </>
-        )}
         {type === 'register' && (
           <>
             <input
@@ -128,28 +96,32 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
             {errors.email && <p className="error">{errors.email}</p>}
             <input
               type="text"
-              placeholder="아이디"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            {errors.username && <p className="error">{errors.username}</p>}
-            <input
-              type="text"
               placeholder="닉네임"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               required
             />
             {errors.nickname && <p className="error">{errors.nickname}</p>}
-            <input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {errors.password && <p className="error">{errors.password}</p>}
+          </>
+        )}
+        <input
+          type="text"
+          placeholder="아이디"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        {errors.username && <p className="error">{errors.username}</p>}
+        <input
+          type="password"
+          placeholder="비밀번호"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {errors.password && <p className="error">{errors.password}</p>}
+        {type === 'register' && (
+          <>
             <input
               type="password"
               placeholder="비밀번호 확인"
@@ -165,6 +137,9 @@ function AuthModal({ type, onClose, onLoginSuccess }) {
           {isLoading ? '처리 중...' : (type === 'login' ? '로그인' : '회원가입')}
         </button>
       </form>
+      <button onClick={() => onSwitchAuthType(type === 'login' ? 'register' : 'login')} className="switch-auth-type">
+        {type === 'login' ? '회원가입' : '로그인'}
+      </button>
       <button onClick={onClose} className="close-button">&times;</button>
     </div>
   );

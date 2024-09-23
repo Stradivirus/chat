@@ -13,7 +13,7 @@
   border-radius: 20px;
   font-weight: 600;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
+  font-size: 0.70rem;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -165,11 +165,11 @@
   border-bottom-left-radius: 5px;
 }
 
-/* 수정: 메시지 사용자 이름 스타일 변경 */
+/* 메시지 사용자 이름 스타일 */
 .message-username {
   font-weight: bold;
   margin-right: 8px;
-  color: #2ecc71; /* 초록색 계통으로 변경 */
+  color: #2ecc71;
 }
 
 .system-message {
@@ -182,9 +182,9 @@
   margin: 10px 0;
 }
 
-/* 수정: 사용자 닉네임 스타일 변경 */
+/* 사용자 닉네임 스타일 */
 .user-nickname {
-  background-color: #2ecc71; /* 초록색 계통으로 변경 */
+  background-color: #2ecc71;
   color: #ffffff;
   padding: 6px 12px;
   border-radius: 15px;
@@ -192,12 +192,6 @@
   margin-right: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
-}
-
-/* 수정: 다크 모드에서 사용자 닉네임 스타일 */
-.dark-mode .user-nickname {
-  background-color: #2ecc71; /* 다크 모드에서도 같은 색상 유지 */
-  color: #ffffff;
 }
 
 .session-expired-modal {
@@ -234,7 +228,87 @@
   color: #e74c3c;
 }
 
-/* 수정: 다크 모드에서 메시지 사용자 이름 스타일 */
+/* 모달 스타일 */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.auth-modal {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+}
+
+.switch-auth-type {
+  margin-top: 15px;
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.switch-auth-type:hover {
+  text-decoration: underline;
+}
+
+.login-message {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  margin-top: 50px;
+}
+
+/* 다크 모드 스타일 */
 .dark-mode .message-username {
-  color: #3cff8d; /* 다크 모드에서도 같은 색상 유지 */
+  color: #3cff8d;
+}
+
+.dark-mode .user-nickname {
+  background-color: #2ecc71;
+  color: #ffffff;
+}
+
+/* 레이아웃 관련 스타일 */
+.side-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.side-header {
+  flex-shrink: 0;
+}
+
+.chat-page {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.chat-input {
+  flex-shrink: 0;
+}
+
+.dark-mode .header-buttons button {
+  font-size: 0.6rem; /* 다크 모드에서의 글씨 크기 */
 }

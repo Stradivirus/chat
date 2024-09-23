@@ -74,6 +74,23 @@ export function useWebSocket(user) {
     }
   }, [chatBanTimeLeft]);
 
+  useEffect(() => {
+    if (socket) {
+      const handleMessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'chat_banned') {
+          setChatBanTimeLeft(data.time_left);
+        }
+      };
+
+      socket.addEventListener('message', handleMessage);
+
+      return () => {
+        socket.removeEventListener('message', handleMessage);
+      };
+    }
+  }, [socket]);
+
   const sendMessage = useCallback((messageObj) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(messageObj));
