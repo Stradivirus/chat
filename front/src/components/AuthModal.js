@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/AuthModal.css';
 import { URLS } from '../urls';
@@ -15,8 +15,27 @@ function AuthModal({ onLoginSuccess }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [duplicates, setDuplicates] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
+
+  useEffect(() => {
+    if (!isLoginMode && username.length >= 4) {
+      checkDuplicate('username');
+    }
+  }, [username, isLoginMode]);
+
+  useEffect(() => {
+    if (!isLoginMode && email.length > 0) {
+      checkDuplicate('email');
+    }
+  }, [email, isLoginMode]);
+
+  useEffect(() => {
+    if (!isLoginMode && nickname.length >= 2) {
+      checkDuplicate('nickname');
+    }
+  }, [nickname, isLoginMode]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -44,15 +63,30 @@ function AuthModal({ onLoginSuccess }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkDuplicate = async (field) => {
+    if (!isLoginMode && (field === 'email' || field === 'username' || field === 'nickname')) {
+      try {
+        const response = await api.post(URLS.CHECK_DUPLICATE, { [field]: eval(field) });
+        if (response.data.isDuplicate) {
+          setDuplicates(prev => ({ ...prev, [field]: `이 ${field === 'email' ? '이메일' : field === 'username' ? '아이디' : '닉네임'}은 이미 사용 중입니다.` }));
+        } else {
+          setDuplicates(prev => ({ ...prev, [field]: null }));
+        }
+      } catch (error) {
+        console.error('Error checking duplicate:', error);
+        setErrors(prev => ({ ...prev, api: '서버 오류가 발생했습니다. 나중에 다시 시도해주세요.' }));
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (validateForm() && !Object.values(duplicates).some(Boolean)) {
       setIsLoading(true);
       try {
         let response;
         if (isLoginMode) {
           response = await api.post(URLS.LOGIN, { username, password });
-          console.log('Login response:', response.data);
           if (response.data && response.data.user_id) {
             onLoginSuccess({
               userId: response.data.user_id,
@@ -63,7 +97,6 @@ function AuthModal({ onLoginSuccess }) {
           }
         } else {
           response = await api.post(URLS.REGISTER, { email, username, nickname, password });
-          console.log('Registration successful:', response.data);
           if (response.data && response.data.user_id) {
             onLoginSuccess({
               userId: response.data.user_id,
@@ -83,6 +116,12 @@ function AuthModal({ onLoginSuccess }) {
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode);
     setErrors({});
+    setDuplicates({});
+    setEmail('');
+    setUsername('');
+    setNickname('');
+    setPassword('');
+    setConfirmPassword('');
   };
 
   return (
@@ -99,6 +138,16 @@ function AuthModal({ onLoginSuccess }) {
               required
             />
             {errors.email && <p className="error">{errors.email}</p>}
+            {duplicates.email && <p className="duplicate-error">{duplicates.email}</p>}
+            <input
+              type="text"
+              placeholder="아이디"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+            {errors.username && <p className="error">{errors.username}</p>}
+            {duplicates.username && <p className="duplicate-error">{duplicates.username}</p>}
             <input
               type="text"
               placeholder="닉네임"
@@ -107,16 +156,18 @@ function AuthModal({ onLoginSuccess }) {
               required
             />
             {errors.nickname && <p className="error">{errors.nickname}</p>}
+            {duplicates.nickname && <p className="duplicate-error">{duplicates.nickname}</p>}
           </>
         )}
-        <input
-          type="text"
-          placeholder="아이디"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        {errors.username && <p className="error">{errors.username}</p>}
+        {isLoginMode && (
+          <input
+            type="text"
+            placeholder="아이디"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        )}
         <input
           type="password"
           placeholder="비밀번호"
@@ -138,7 +189,7 @@ function AuthModal({ onLoginSuccess }) {
           </>
         )}
         {errors.api && <p className="error">{errors.api}</p>}
-        <button type="submit" disabled={isLoading}>
+        <button type="submit" disabled={isLoading || Object.values(duplicates).some(Boolean)}>
           {isLoading ? '처리 중...' : (isLoginMode ? '로그인' : '회원가입')}
         </button>
       </form>

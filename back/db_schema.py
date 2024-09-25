@@ -12,7 +12,7 @@ async def create_tables(conn):
             id UUID PRIMARY KEY,
             username VARCHAR(50) UNIQUE NOT NULL,
             email VARCHAR(100) UNIQUE NOT NULL,
-            nickname VARCHAR(50) NOT NULL,
+            nickname VARCHAR(50) UNIQUE NOT NULL,
             password VARCHAR(255) NOT NULL,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )
@@ -62,13 +62,9 @@ async def create_tables(conn):
     # 초기 파티션 생성
     await conn.execute('''
         DO $$
-        DECLARE
-            i INT;
         BEGIN
-            FOR i IN 0..6 LOOP
-                PERFORM create_time_partition('messages', CURRENT_DATE + i);
-                PERFORM create_time_partition('user_sessions', CURRENT_DATE + i);
-            END LOOP;
+            PERFORM create_time_partition('messages', CURRENT_DATE);
+            PERFORM create_time_partition('user_sessions', CURRENT_DATE);
         END $$;
     ''')
     

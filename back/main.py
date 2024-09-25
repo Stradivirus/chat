@@ -17,7 +17,7 @@ app = FastAPI()
 # CORS 미들웨어 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -77,6 +77,28 @@ async def login(login_data: LoginData):
     if not success:
         raise HTTPException(status_code=400, detail=result)
     return {"message": "Login successful", "user_id": result["user_id"], "username": login_data.username, "nickname": result["nickname"]}
+
+class DuplicateCheckData(BaseModel):
+    """중복 체크를 위한 Pydantic 모델"""
+    email: str = Field(None, min_length=1)
+    username: str = Field(None, min_length=1)
+    nickname: str = Field(None, min_length=1)
+
+@app.post("/check_duplicate")
+@handle_error
+async def check_duplicate(data: DuplicateCheckData):
+    """중복 체크 엔드포인트"""
+    if data.email:
+        is_duplicate = await postgres_manager.check_duplicate('email', data.email)
+        return {"isDuplicate": is_duplicate}
+    elif data.username:
+        is_duplicate = await postgres_manager.check_duplicate('username', data.username)
+        return {"isDuplicate": is_duplicate}
+    elif data.nickname:
+        is_duplicate = await postgres_manager.check_duplicate('nickname', data.nickname)
+        return {"isDuplicate": is_duplicate}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid request")
 
 @app.get("/recent_messages")
 @handle_error

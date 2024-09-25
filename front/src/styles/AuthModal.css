@@ -75,6 +75,13 @@
   box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
 }
 
+.auth-modal button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .switch-auth-type {
   background: none;
   border: none;
@@ -99,4 +106,16 @@
   padding: 8px 12px;
   border-radius: 8px;
   border-left: 4px solid #e53e3e;
+}
+
+.duplicate-error {
+  color: #e53e3e;
+  font-size: 0.9rem;
+  margin-top: 0;
+  margin-bottom: 15px;
+  background-color: #fff5f5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 4px solid #e53e3e;
+  text-align: center;
 }

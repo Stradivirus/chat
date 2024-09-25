@@ -139,4 +139,14 @@ class PostgresManager:
             self.logger.error(f"Error saving messages from Redis: {e}")
             return False
 
+    async def check_duplicate(self, field: str, value: str) -> bool:
+        """이메일, 사용자 이름, 닉네임의 중복을 확인하는 메서드"""
+        try:
+            async with self.pool.acquire() as conn:
+                count = await conn.fetchval(f'SELECT COUNT(*) FROM users WHERE {field} = $1', value)
+            return count > 0
+        except Exception as e:
+            self.logger.error(f"Error checking duplicate {field}: {e}")
+            return False
+
 postgres_manager = PostgresManager()
