@@ -19,24 +19,6 @@ function AuthModal({ onLoginSuccess }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
 
-  useEffect(() => {
-    if (!isLoginMode && username.length >= 4) {
-      checkDuplicate('username');
-    }
-  }, [username, isLoginMode]);
-
-  useEffect(() => {
-    if (!isLoginMode && email.length > 0) {
-      checkDuplicate('email');
-    }
-  }, [email, isLoginMode]);
-
-  useEffect(() => {
-    if (!isLoginMode && nickname.length >= 2) {
-      checkDuplicate('nickname');
-    }
-  }, [nickname, isLoginMode]);
-
   const validateForm = () => {
     const newErrors = {};
     
@@ -65,8 +47,16 @@ function AuthModal({ onLoginSuccess }) {
 
   const checkDuplicate = async (field) => {
     if (!isLoginMode && (field === 'email' || field === 'username' || field === 'nickname')) {
+      const value = field === 'email' ? email : field === 'username' ? username : nickname;
+      
+      // 빈 값 체크
+      if (!value.trim()) {
+        setDuplicates(prev => ({ ...prev, [field]: null }));
+        return;
+      }
+
       try {
-        const response = await api.post(URLS.CHECK_DUPLICATE, { [field]: eval(field) });
+        const response = await api.post(URLS.CHECK_DUPLICATE, { [field]: value });
         if (response.data.isDuplicate) {
           setDuplicates(prev => ({ ...prev, [field]: `이 ${field === 'email' ? '이메일' : field === 'username' ? '아이디' : '닉네임'}은 이미 사용 중입니다.` }));
         } else {
@@ -74,8 +64,19 @@ function AuthModal({ onLoginSuccess }) {
         }
       } catch (error) {
         console.error('Error checking duplicate:', error);
-        setErrors(prev => ({ ...prev, api: '서버 오류가 발생했습니다. 나중에 다시 시도해주세요.' }));
+        // 422 에러 (Unprocessable Entity)를 특별히 처리
+        if (error.response && error.response.status === 422) {
+          setDuplicates(prev => ({ ...prev, [field]: null }));
+        } else {
+          setErrors(prev => ({ ...prev, api: '서버 오류가 발생했습니다. 나중에 다시 시도해주세요.' }));
+        }
       }
+    }
+  };
+
+  const handleBlur = (field) => {
+    if (!isLoginMode) {
+      checkDuplicate(field);
     }
   };
 
@@ -83,6 +84,8 @@ function AuthModal({ onLoginSuccess }) {
     e.preventDefault();
     if (validateForm() && !Object.values(duplicates).some(Boolean)) {
       setIsLoading(true);
+      // 2초 대기
+      await new Promise(resolve => setTimeout(resolve, 2000));
       try {
         let response;
         if (isLoginMode) {
@@ -135,38 +138,36 @@ function AuthModal({ onLoginSuccess }) {
               placeholder="이메일"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => handleBlur('email')}
               required
             />
             {errors.email && <p className="error">{errors.email}</p>}
             {duplicates.email && <p className="duplicate-error">{duplicates.email}</p>}
-            <input
-              type="text"
-              placeholder="아이디"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            {errors.username && <p className="error">{errors.username}</p>}
-            {duplicates.username && <p className="duplicate-error">{duplicates.username}</p>}
+          </>
+        )}
+        <input
+          type="text"
+          placeholder="아이디"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          onBlur={() => handleBlur('username')}
+          required
+        />
+        {errors.username && <p className="error">{errors.username}</p>}
+        {duplicates.username && <p className="duplicate-error">{duplicates.username}</p>}
+        {!isLoginMode && (
+          <>
             <input
               type="text"
               placeholder="닉네임"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
+              onBlur={() => handleBlur('nickname')}
               required
             />
             {errors.nickname && <p className="error">{errors.nickname}</p>}
             {duplicates.nickname && <p className="duplicate-error">{duplicates.nickname}</p>}
           </>
-        )}
-        {isLoginMode && (
-          <input
-            type="text"
-            placeholder="아이디"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
         )}
         <input
           type="password"
