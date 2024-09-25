@@ -72,12 +72,12 @@ async def sync_redis_to_postgres():
             # 50개 이상 메시지가 있거나 마지막 동기화 후 10초 이상 지났을 때 동기화
             if len(messages) >= 50 or current_time - last_sync_time >= 10:
                 success = await postgres_manager.save_messages_from_redis(messages)
-                if success:
+                if success and messages:  # 메시지가 있고 성공적으로 저장된 경우에만 로그 출력
                     # 동기화 성공 시 Redis에서 해당 메시지 삭제
                     await redis_manager.clear_synced_messages(len(messages))
                     last_sync_time = current_time
                     logger.info(f"Synced {len(messages)} messages to PostgreSQL")
-                else:
+                elif not success:
                     logger.error("Failed to sync messages to PostgreSQL")
             await asyncio.sleep(1)
         except Exception as e:
