@@ -27,13 +27,13 @@ class RedisManager:
             "nickname": nickname,
             "timestamp": time.time()
         }
-        # 사용자별 메시지 저장 (최근 50개)
+        # 사용자별 메시지 저장 (최근 200개)
         await self.redis.lpush(f"user:{sender_id}:messages", json.dumps(message_data))
-        await self.redis.ltrim(f"user:{sender_id}:messages", 0, 49)
+        await self.redis.ltrim(f"user:{sender_id}:messages", 0, 199)
         
-        # 전체 메시지 저장 (최근 500개)
+        # 전체 메시지 저장 (최근 2000개)
         await self.redis.lpush("all_messages", json.dumps(message_data))
-        await self.redis.ltrim("all_messages", 0, 499)
+        await self.redis.ltrim("all_messages", 0, 1999)
 
     async def get_recent_messages(self, limit: int = 50) -> List[Dict]:
         """최근 메시지를 가져오는 메서드"""
