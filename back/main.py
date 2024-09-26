@@ -114,7 +114,8 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     """WebSocket 연결을 처리하는 엔드포인트"""
     user = await postgres_manager.get_user_by_id(user_id)
     if not user:
-        await websocket.close(code=4000)  # 유효하지 않은 사용자 ID
+        await websocket.close(code=4003)  # 유효하지 않은 사용자 ID
+        logger.warning(f"Invalid user ID attempted to connect: {user_id}")
         return
 
     username = user['username']

@@ -13,7 +13,6 @@ class PostgresManager:
 
     async def start(self):
         """데이터베이스 연결 풀을 생성하고 테이블을 초기화하는 메서드"""
-        # PostgreSQL 연결 풀 생성
         self.pool = await asyncpg.create_pool(
             user='chat_admin',
             password='1q2w3e4r!!',
@@ -21,7 +20,6 @@ class PostgresManager:
             host='localhost',
             port=5432
         )
-        # 데이터베이스 스키마 초기화
         await initialize_database(self.pool)
 
     async def stop(self):
@@ -31,10 +29,8 @@ class PostgresManager:
     async def register_user(self, username: str, password: str, email: str, nickname: str):
         """새 사용자를 등록하는 메서드"""
         try:
-            # 비밀번호 해싱
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             async with self.pool.acquire() as conn:
-                # 사용자 정보를 데이터베이스에 삽입
                 user_id = await conn.fetchval(
                     'INSERT INTO users (id, username, email, nickname, password) VALUES ($1, $2, $3, $4, $5) RETURNING id',
                     uuid.uuid4(), username, email, nickname, hashed_password.decode('utf-8')
@@ -42,7 +38,6 @@ class PostgresManager:
             self.logger.info(f"User registered successfully: {username}")
             return True, str(user_id)
         except asyncpg.UniqueViolationError:
-            # 중복된 사용자 이름 또는 이메일 처리
             self.logger.warning(f"Attempted to register existing username or email: {username}")
             return False, "Username or email already exists"
         except Exception as e:
@@ -53,12 +48,10 @@ class PostgresManager:
         """사용자 로그인을 처리하는 메서드"""
         try:
             async with self.pool.acquire() as conn:
-                # 사용자 정보 조회
                 user = await conn.fetchrow(
                     'SELECT id, password, nickname FROM users WHERE username = $1',
                     username
                 )
-            # 비밀번호 검증
             if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
                 self.logger.info(f"Successful login for username: {username}")
                 return True, {"user_id": str(user['id']), "nickname": user['nickname']}
@@ -73,12 +66,10 @@ class PostgresManager:
         try:
             message_date = datetime.now().date()
             async with self.pool.acquire() as conn:
-                # 필요한 파티션 확인 및 생성
                 await ensure_partition_exists(conn, 'messages', message_date)
-                # 메시지 저장
                 await conn.execute(
-                    'INSERT INTO messages (id, sender_id, nickname, content) VALUES ($1, $2, $3, $4)',
-                    uuid.uuid4(), uuid.UUID(sender_id), nickname, content
+                    'INSERT INTO messages (sender_id, nickname, content) VALUES ($1, $2, $3)',
+                    uuid.UUID(sender_id), nickname, content
                 )
             return True
         except Exception as e:
@@ -90,9 +81,7 @@ class PostgresManager:
         try:
             session_date = datetime.now().date()
             async with self.pool.acquire() as conn:
-                # 필요한 파티션 확인 및 생성
                 await ensure_partition_exists(conn, 'user_sessions', session_date)
-                # 세션 정보 저장
                 await conn.execute(
                     'INSERT INTO user_sessions (id, user_id, ip_address) VALUES ($1, $2, $3)',
                     uuid.uuid4(), uuid.UUID(user_id), ip_address
@@ -102,13 +91,12 @@ class PostgresManager:
             self.logger.error(f"Error saving user session: {e}")
             return False
 
-    async def get_recent_messages(self, limit: int = 50) -> List[Dict]:
-        """최근 메시지를 가져오는 메서드"""
+    async def get_recent_messages_from_db(self, limit: int = 50) -> List[Dict]:
+        """데이터베이스에서 최근 메시지를 가져오는 메서드"""
         try:
             async with self.pool.acquire() as conn:
-                # 최근 메시지 조회
                 rows = await conn.fetch('''
-                    SELECT m.created_at, m.id, m.content, m.nickname, u.username as sender
+                    SELECT m.created_at, m.content, m.nickname, u.username as sender
                     FROM messages m
                     JOIN users u ON m.sender_id = u.id
                     ORDER BY m.created_at DESC
@@ -116,14 +104,13 @@ class PostgresManager:
                 ''', limit)
             return [dict(r) for r in rows]
         except Exception as e:
-            self.logger.error(f"Error fetching recent messages: {e}")
+            self.logger.error(f"Error fetching recent messages from database: {e}")
             return []
 
     async def get_user_by_id(self, user_id: str):
         """사용자 ID로 사용자 정보를 가져오는 메서드"""
         try:
             async with self.pool.acquire() as conn:
-                # 사용자 정보 조회
                 user = await conn.fetchrow(
                     'SELECT id, username, nickname FROM users WHERE id = $1',
                     uuid.UUID(user_id)
@@ -140,13 +127,17 @@ class PostgresManager:
         try:
             async with self.pool.acquire() as conn:
                 for message in messages:
+                    # 사용자 ID가 유효한지 확인
+                    user_exists = await conn.fetchval('SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)', uuid.UUID(message['sender_id']))
+                    if not user_exists:
+                        self.logger.warning(f"Skipping message from non-existent user: {message['sender_id']}")
+                        continue
+
                     message_date = datetime.fromtimestamp(message['timestamp']).date()
-                    # 필요한 파티션 확인 및 생성
                     await ensure_partition_exists(conn, 'messages', message_date)
-                    # 메시지 저장
                     await conn.execute(
-                        'INSERT INTO messages (id, sender_id, nickname, content, created_at) VALUES ($1, $2, $3, $4, $5)',
-                        uuid.uuid4(), uuid.UUID(message['sender_id']), message['username'], message['content'],
+                        'INSERT INTO messages (sender_id, nickname, content, created_at) VALUES ($1, $2, $3, $4)',
+                        uuid.UUID(message['sender_id']), message['nickname'], message['content'],
                         datetime.fromtimestamp(message['timestamp'])
                     )
             return True
@@ -158,7 +149,6 @@ class PostgresManager:
         """이메일, 사용자 이름, 닉네임의 중복을 확인하는 메서드"""
         try:
             async with self.pool.acquire() as conn:
-                # 중복 확인 쿼리 실행
                 count = await conn.fetchval(f'SELECT COUNT(*) FROM users WHERE {field} = $1', value)
             return count > 0
         except Exception as e:
