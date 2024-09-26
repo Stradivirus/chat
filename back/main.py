@@ -15,12 +15,13 @@ import asyncio
 app = FastAPI()
 
 # CORS 미들웨어 설정
+# 클라이언트 사이드 애플리케이션이 API에 접근할 수 있도록 허용
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost"],
+    allow_origins=["http://localhost"],  # 로컬 개발 환경에서의 접근 허용
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # 모든 HTTP 메소드 허용
+    allow_headers=["*"],  # 모든 HTTP 헤더 허용
 )
 
 # 로깅 설정
@@ -28,22 +29,23 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ConnectionManager 인스턴스 생성
+# WebSocket 연결을 관리하는 객체
 manager = ConnectionManager()
 
 @app.on_event("startup")
 async def startup_event():
     """애플리케이션 시작 시 실행되는 이벤트 핸들러"""
-    await postgres_manager.start()
-    await redis_manager.connect()
+    await postgres_manager.start()  # PostgreSQL 연결 시작
+    await redis_manager.connect()  # Redis 연결 시작
     await redis_manager.redis.delete("active_connections")  # active_connections 초기화
-    start_background_tasks(manager)
+    start_background_tasks(manager)  # 백그라운드 작업 시작
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """애플리케이션 종료 시 실행되는 이벤트 핸들러"""
-    await postgres_manager.stop()
-    await redis_manager.disconnect()
-    stop_background_tasks(manager)
+    await postgres_manager.stop()  # PostgreSQL 연결 종료
+    await redis_manager.disconnect()  # Redis 연결 종료
+    stop_background_tasks(manager)  # 백그라운드 작업 종료
 
 class UserRegister(BaseModel):
     """사용자 등록을 위한 Pydantic 모델"""
@@ -112,7 +114,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     """WebSocket 연결을 처리하는 엔드포인트"""
     user = await postgres_manager.get_user_by_id(user_id)
     if not user:
-        await websocket.close(code=4000)
+        await websocket.close(code=4000)  # 유효하지 않은 사용자 ID
         return
 
     username = user['username']
