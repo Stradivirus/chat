@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_USER=chat_admin
+      - POSTGRES_PASSWORD=1q2w3e4r!!
+      - POSTGRES_DB=chatting
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chat-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chat_admin -d chatting"]  # 데이터베이스 이름 수정
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - chat-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: 
+      context: ./back
+    expose:
+      - "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - POSTGRES_USER=chat_admin
+      - POSTGRES_PASSWORD=1q2w3e4r!!
+      - POSTGRES_DB=chatting
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis
+    networks:
+      - chat-network
+    restart: on-failure
+
+  frontend:
+    build: 
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    networks:
+      - chat-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  chat-network:
+    driver: bridge

@@ -4,3 +4,4 @@ asyncpg
 axios
 python-jose[cryptography]
 redis
+bcrypt

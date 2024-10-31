@@ -1,16 +1,22 @@
 import redis.asyncio as redis
 import json
 import time
+import os
 from typing import List, Dict
 
 class RedisManager:
     def __init__(self):
         self.redis = None
 
+    #async def connect(self):
+    #    """Redis 서버에 연결하는 메서드"""
+        # localhost의 Redis 서버에 비동기적으로 연결
+    #    self.redis = await redis.from_url("redis://localhost")
+
     async def connect(self):
         """Redis 서버에 연결하는 메서드"""
-        # localhost의 Redis 서버에 비동기적으로 연결
-        self.redis = await redis.from_url("redis://localhost")
+        redis_url = os.getenv('REDIS_URL', "redis://localhost")
+        self.redis = await redis.from_url(redis_url)
 
     async def disconnect(self):
         """Redis 연결을 종료하는 메서드"""

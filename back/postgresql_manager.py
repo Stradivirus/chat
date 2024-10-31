@@ -4,6 +4,7 @@ from typing import List, Dict
 import uuid
 from datetime import datetime, timedelta
 import bcrypt
+import os
 from db_schema import initialize_database, ensure_partition_exists
 
 class PostgresManager:
@@ -11,13 +12,24 @@ class PostgresManager:
         self.pool = None
         self.logger = logging.getLogger(__name__)
 
+    #async def start(self):
+    #    """데이터베이스 연결 풀을 생성하고 테이블을 초기화하는 메서드"""
+    #    self.pool = await asyncpg.create_pool(
+    #        user='chat_admin',
+    #        password='1q2w3e4r!!',
+    #        database='chatting',
+    #        host='localhost',
+    #        port=5432
+    #    )
+    #    await initialize_database(self.pool)
+
     async def start(self):
         """데이터베이스 연결 풀을 생성하고 테이블을 초기화하는 메서드"""
         self.pool = await asyncpg.create_pool(
-            user='chat_admin',
-            password='1q2w3e4r!!',
-            database='chatting',
-            host='localhost',
+            user=os.getenv('POSTGRES_USER', 'chat_admin'),
+            password=os.getenv('POSTGRES_PASSWORD', '1q2w3e4r!!'),
+            database=os.getenv('POSTGRES_DB', 'chatting'),
+            host=os.getenv('POSTGRES_HOST', 'localhost'),
             port=5432
         )
         await initialize_database(self.pool)

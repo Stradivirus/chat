@@ -18,7 +18,7 @@ app = FastAPI()
 # 클라이언트 사이드 애플리케이션이 API에 접근할 수 있도록 허용
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost"],  # 로컬 개발 환경에서의 접근 허용
+    allow_origins=["*"],  # 로컬 개발 환경에서의 접근 허용
     allow_credentials=True,
     allow_methods=["*"],  # 모든 HTTP 메소드 허용
     allow_headers=["*"],  # 모든 HTTP 헤더 허용
