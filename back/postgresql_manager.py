@@ -26,11 +26,11 @@ class PostgresManager:
     async def start(self):
         """데이터베이스 연결 풀을 생성하고 테이블을 초기화하는 메서드"""
         self.pool = await asyncpg.create_pool(
-            user=os.getenv('POSTGRES_USER', 'chat_admin'),
-            password=os.getenv('POSTGRES_PASSWORD', '1q2w3e4r!!'),
-            database=os.getenv('POSTGRES_DB', 'chatting'),
-            host=os.getenv('POSTGRES_HOST', 'localhost'),
-            port=5432
+            user=os.getenv('POSTGRES_USER'),
+            password=os.getenv('POSTGRES_PASSWORD'),
+            database=os.getenv('POSTGRES_DB'),
+            host=os.getenv('POSTGRES_HOST'),
+            port=int(os.getenv('POSTGRES_PORT', '5432'))
         )
         await initialize_database(self.pool)
 

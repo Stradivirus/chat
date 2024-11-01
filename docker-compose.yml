@@ -4,17 +4,18 @@ services:
   postgres:
     image: postgres:16
     expose:
-      - "5432"
+      - "${POSTGRES_PORT}"
     environment:
-      - POSTGRES_USER=chat_admin
-      - POSTGRES_PASSWORD=1q2w3e4r!!
-      - POSTGRES_DB=chatting
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - TZ=${TZ}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - chat-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chat_admin -d chatting"]  # 데이터베이스 이름 수정
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,6 +24,8 @@ services:
     image: redis:6
     expose:
       - "6379"
+    environment:
+      - TZ=${TZ}
     volumes:
       - redis_data:/data
     networks:
@@ -44,11 +47,13 @@ services:
       redis:
         condition: service_healthy
     environment:
-      - POSTGRES_USER=chat_admin
-      - POSTGRES_PASSWORD=1q2w3e4r!!
-      - POSTGRES_DB=chatting
-      - POSTGRES_HOST=postgres
-      - REDIS_URL=redis://redis
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - REDIS_URL=${REDIS_URL}
+      - TZ=${TZ}
     networks:
       - chat-network
     restart: on-failure
@@ -59,6 +64,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+    environment:
+      - TZ=${TZ}
     depends_on:
       - web
     networks:
