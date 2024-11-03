@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ChatPage from './pages/ChatPage';
+import SystemInfoPage from './pages/SystemInfoPage';
 import AuthModal from './components/AuthModal';
 import { useWebSocket } from './hooks/useWebSocket';
 import './styles/base.css';
@@ -10,6 +11,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [userCount, setUserCount] = useState(0);
   const [showExam, setShowExam] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const {
     socket,
@@ -45,6 +47,7 @@ function App() {
     setUser(null);
     setUserCount(0);
     setShowExam(false);
+    setShowInfo(false);
     if (socket) {
       socket.close(1000, "Logout");
     }
@@ -57,11 +60,78 @@ function App() {
 
   const handleExamButtonClick = () => {
     setShowExam(true);
+    setShowInfo(false);
+  };
+
+  const handleInfoButtonClick = () => {
+    setShowInfo(true);
+    setShowExam(false);
   };
 
   const handleHomeButtonClick = () => {
     setShowExam(false);
+    setShowInfo(false);
   };
+
+  const HomeButton = () => (
+    <button 
+      onClick={handleHomeButtonClick}
+      style={{
+        position: 'absolute',
+        left: '20px',
+        top: '20px',
+        padding: '8px 16px',
+        backgroundColor: '#4a90e2',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        zIndex: 1000
+      }}
+    >
+      홈으로
+    </button>
+  );
+
+  const MainButtons = () => (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100%'
+    }}>
+      <button 
+        onClick={handleExamButtonClick}
+        style={{
+          padding: '15px 30px',
+          fontSize: '18px',
+          backgroundColor: '#4a90e2',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}
+      >
+        시험 보러가기
+      </button>
+      <button 
+        onClick={handleInfoButtonClick}
+        style={{
+          padding: '15px 30px',
+          fontSize: '18px',
+          backgroundColor: '#28a745',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}
+      >
+        시스템 소개
+      </button>
+    </div>
+  );
 
   return (
     <div className="App">
@@ -70,25 +140,14 @@ function App() {
           <h1>채팅 애플리케이션</h1>
         </header>
         <main className="main-content">
-          {showExam ? (
+          {showInfo ? (
             <>
-              <button 
-                onClick={handleHomeButtonClick}
-                style={{
-                  position: 'absolute',
-                  left: '20px',
-                  top: '20px',
-                  padding: '8px 16px',
-                  backgroundColor: '#4a90e2',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  zIndex: 1000
-                }}
-              >
-                홈으로
-              </button>
+              <HomeButton />
+              <SystemInfoPage />
+            </>
+          ) : showExam ? (
+            <>
+              <HomeButton />
               <iframe 
                 src="http://localhost:8001"
                 style={{
@@ -103,29 +162,7 @@ function App() {
               />
             </>
           ) : (
-            user && (
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100%'
-              }}>
-                <button 
-                  onClick={handleExamButtonClick}
-                  style={{
-                    padding: '15px 30px',
-                    fontSize: '18px',
-                    backgroundColor: '#4a90e2',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  시험 보러가기
-                </button>
-              </div>
-            )
+            user && <MainButtons />
           )}
         </main>
       </div>

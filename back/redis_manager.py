@@ -8,11 +8,6 @@ class RedisManager:
     def __init__(self):
         self.redis = None
 
-    #async def connect(self):
-    #    """Redis 서버에 연결하는 메서드"""
-        # localhost의 Redis 서버에 비동기적으로 연결
-    #    self.redis = await redis.from_url("redis://localhost")
-
     async def connect(self):
         """Redis 서버에 연결하는 메서드"""
         redis_url = os.getenv('REDIS_URL', "redis://localhost")
