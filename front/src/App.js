@@ -9,6 +9,7 @@ import './styles/utilities.css';
 function App() {
   const [user, setUser] = useState(null);
   const [userCount, setUserCount] = useState(0);
+  const [showExam, setShowExam] = useState(false);
 
   const {
     socket,
@@ -43,6 +44,7 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     setUserCount(0);
+    setShowExam(false);
     if (socket) {
       socket.close(1000, "Logout");
     }
@@ -53,6 +55,14 @@ function App() {
     handleLogout();
   };
 
+  const handleExamButtonClick = () => {
+    setShowExam(true);
+  };
+
+  const handleHomeButtonClick = () => {
+    setShowExam(false);
+  };
+
   return (
     <div className="App">
       <div className="main-section">
@@ -60,7 +70,63 @@ function App() {
           <h1>채팅 애플리케이션</h1>
         </header>
         <main className="main-content">
-        
+          {showExam ? (
+            <>
+              <button 
+                onClick={handleHomeButtonClick}
+                style={{
+                  position: 'absolute',
+                  left: '20px',
+                  top: '20px',
+                  padding: '8px 16px',
+                  backgroundColor: '#4a90e2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  zIndex: 1000
+                }}
+              >
+                홈으로
+              </button>
+              <iframe 
+                src="http://localhost:8001"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  overflow: 'hidden'
+                }}
+                title="Docker Service"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
+                referrerPolicy="origin"
+              />
+            </>
+          ) : (
+            user && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100%'
+              }}>
+                <button 
+                  onClick={handleExamButtonClick}
+                  style={{
+                    padding: '15px 30px',
+                    fontSize: '18px',
+                    backgroundColor: '#4a90e2',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  시험 보러가기
+                </button>
+              </div>
+            )
+          )}
         </main>
       </div>
       <div className="side-container">
