@@ -149,7 +149,7 @@ function App() {
             <>
               <HomeButton />
               <iframe 
-                src="http://localhost:8001"
+                src="http://34.64.132.7:8001"
                 style={{
                   width: '100%',
                   height: '100%',
