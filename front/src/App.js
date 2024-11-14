@@ -137,7 +137,7 @@ function App() {
     <div className="App">
       <div className="main-section">
         <header className="main-header">
-          <h1>채팅 애플리케이션</h1>
+          <h1>다소니 - 채팅</h1>
         </header>
         <main className="main-content">
           {showInfo ? (
