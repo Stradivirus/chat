@@ -64,7 +64,6 @@ function AuthModal({ onLoginSuccess }) {
         }
       } catch (error) {
         console.error('Error checking duplicate:', error);
-        // 422 에러 (Unprocessable Entity)를 특별히 처리
         if (error.response && error.response.status === 422) {
           setDuplicates(prev => ({ ...prev, [field]: null }));
         } else {
@@ -113,6 +112,30 @@ function AuthModal({ onLoginSuccess }) {
         setErrors({ api: error.response ? error.response.data.detail : '서버 오류가 발생했습니다.' });
         setIsLoading(false);
       }
+    }
+  };
+
+  const handleTestLogin = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.post(URLS.LOGIN, { 
+        username: 'test', 
+        password: '12341234' 
+      });
+      
+      if (response.data && response.data.user_id) {
+        onLoginSuccess({
+          userId: response.data.user_id,
+          username: 'test'
+        });
+      } else {
+        throw new Error('Invalid server response');
+      }
+    } catch (error) {
+      console.error('Error:', error.response ? error.response.data : error.message);
+      setErrors({ api: error.response ? error.response.data.detail : '서버 오류가 발생했습니다.' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -197,6 +220,11 @@ function AuthModal({ onLoginSuccess }) {
       <button onClick={toggleMode} className="switch-auth-type">
         {isLoginMode ? '회원가입' : '로그인'}
       </button>
+      {isLoginMode && (
+        <button onClick={handleTestLogin} className="switch-auth-type" disabled={isLoading}>
+          {isLoading ? '처리 중...' : '테스트 계정으로 로그인'}
+        </button>
+      )}
     </div>
   );
 }
