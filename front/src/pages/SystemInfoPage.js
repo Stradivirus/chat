@@ -40,14 +40,14 @@ const SystemInfoPage = () => {
              <h4>프론트엔드 (React)</h4>
              <ul>
                <li>실시간 채팅 UI 제공</li>
-               <li>채팅마다 0.5초 시간 제한, 최대 메세지 길이 30자, 같은 채팅 4번째 칠 경우 20초 채팅 금지 기능</li>
+               <li>채팅창 관리 및 스팸 방지 기능</li>
                <li>WebSocket을 통한 실시간 통신</li>
-               <li>사용자 인증 및 세션 관리</li>
                <li>시험 시스템 연동</li>
              </ul>
 
              <h4>백엔드 (FastAPI)</h4>
              <ul>
+               <li>사용자 인증 및 세션 관리</li>
                <li>WebSocket 연결 관리</li>
                <li>실시간 메시지 처리</li>
                <li>사용자 인증 처리</li>
@@ -56,7 +56,7 @@ const SystemInfoPage = () => {
              <h4>데이터 저장소</h4>
              <ul>
                <li>Redis: 실시간 채팅 데이터 캐싱</li>
-               <li>50개 이상 메시지가 있거나 마지막 동기화 후 10초 이상 지났을 때 동기화</li>
+               <li>Redis에서 Postgresql로 자동 동기화</li>
                <li>PostgreSQL: 사용자 정보 및 채팅 이력 저장</li>
              </ul>
            </div>
@@ -99,7 +99,7 @@ const SystemInfoPage = () => {
 
        {/* 오른쪽: 향후 추가 기능 */}
        <div>
-         <h2 style={{ color: '#333', marginBottom: '1.5rem' }}>향후 추가 기능</h2>
+         <h2 style={{ color: '#333', marginBottom: '1.5rem' }}>향후 추가하고 싶은 기능</h2>
          
          <div className="system-section">
            <h3>MSA 구조 완성</h3>
@@ -183,10 +183,8 @@ const SystemInfoPage = () => {
            <div className="component-description">
              <h4>자동화 파이프라인</h4>
              <ul>
-               <li>Jenkins 기반 CI 파이프라인 구축</li>
                <li>Argo CD를 통한 CD 자동화</li>
                <li>테스트 자동화 연동</li>
-               <li>컨테이너 이미지 자동 빌드/배포</li>
              </ul>
 
              <h4>쿠버네티스 마이그레이션</h4>
