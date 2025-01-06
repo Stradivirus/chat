@@ -10,7 +10,6 @@ import './styles/utilities.css';
 function App() {
   const [user, setUser] = useState(null);
   const [userCount, setUserCount] = useState(0);
-  const [showExam, setShowExam] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
   const {
@@ -46,7 +45,6 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     setUserCount(0);
-    setShowExam(false);
     setShowInfo(false);
     if (socket) {
       socket.close(1000, "Logout");
@@ -58,18 +56,11 @@ function App() {
     handleLogout();
   };
 
-  const handleExamButtonClick = () => {
-    setShowExam(true);
-    setShowInfo(false);
-  };
-
   const handleInfoButtonClick = () => {
     setShowInfo(true);
-    setShowExam(false);
   };
 
   const handleHomeButtonClick = () => {
-    setShowExam(false);
     setShowInfo(false);
   };
 
@@ -103,20 +94,6 @@ function App() {
       height: '100%'
     }}>
       <button 
-        onClick={handleExamButtonClick}
-        style={{
-          padding: '15px 30px',
-          fontSize: '18px',
-          backgroundColor: '#4a90e2',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
-      >
-        시험 보러가기
-      </button>
-      <button 
         onClick={handleInfoButtonClick}
         style={{
           padding: '15px 30px',
@@ -144,22 +121,6 @@ function App() {
             <>
               <HomeButton />
               <SystemInfoPage />
-            </>
-          ) : showExam ? (
-            <>
-              <HomeButton />
-              <iframe 
-                src="http://34.64.132.7:8001"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  border: 'none',
-                  overflow: 'hidden'
-                }}
-                title="Docker Service"
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
-                referrerPolicy="origin"
-              />
             </>
           ) : (
             user && <MainButtons />
