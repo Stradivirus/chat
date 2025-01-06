@@ -157,7 +157,7 @@ function App() {
                   overflow: 'hidden'
                 }}
                 title="Docker Service"
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads allow-presentation"
                 referrerPolicy="origin"
               />
             </>
