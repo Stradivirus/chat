@@ -149,7 +149,7 @@ function App() {
             <>
               <HomeButton />
               <iframe 
-                src="https://dc0lt4eu69rm8.cloudfront.net/"
+                src="http://34.64.132.7:8001"
                 style={{
                   width: '100%',
                   height: '100%',
@@ -157,7 +157,7 @@ function App() {
                   overflow: 'hidden'
                 }}
                 title="Docker Service"
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads allow-presentation"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
                 referrerPolicy="origin"
               />
             </>
