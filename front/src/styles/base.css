@@ -1,13 +1,14 @@
 /* base.css */
 
 /* 한지 느낌의 폰트 추가 */
-@import url('https://hangeul.pstatic.net/hangeul_static/css/nanum-handwriting.css');
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap');
+
 
 
 /* 전역 스타일 */
 body {
   margin: 0;
-  font-family: 'Nanum Pen Script', cursive;
+  font-family: 'Gowun Batang', serif;
   background-color: #f7f9fc;
   color: #2c3e50;
   line-height: 1.6;
