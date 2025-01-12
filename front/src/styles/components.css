@@ -1,20 +1,101 @@
-/* components.css */
+/* components.css - 컴포넌트별 스타일 */
+
+/* 버튼 공통 스타일 */
+.button-base {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  padding: 12px 24px;
+}
+
+.button-base:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* MainButtons 컴포넌트 스타일 */
+.main-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* 홈 버튼 스타일 */
+.home-button {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  padding: 12px 24px;
+  background-color: #4a90e2;
+  color: white;
+  z-index: 1000;
+  font-size: 1.2rem;
+}
+
+/* 시스템 소개 버튼 스타일 */
+.info-button {
+  padding: 20px 40px;
+  font-size: 28px;
+  background-color: #ff9e9e;
+  color: white;
+}
 
 /* 사용자 카운트 스타일 */
 .user-count {
   font-weight: 600;
-  color: #6c757d;
-  font-size: 0.95rem;
-  background-color: #e2e8f0;
-  padding: 5px 10px;
+  color: #4e3505;
+  font-size: 1.2rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
   border-radius: 15px;
+}
+
+/* 사용자 닉네임 스타일 */
+.user-nickname {
+  background-color: #2ecc71;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 15px;
+  font-weight: bold;
+  margin-right: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+/* 로그아웃 버튼 스타일 */
+.logout-button {
+  background-color: #e74c3c;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 15px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.logout-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 /* 채팅 페이지 스타일 */
 .chat-page {
   height: calc(100% - 70px);
-  background-color: #f0f2f5;
+  background-color: transparent;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../assets/background.jpg');
   display: flex;
+  background-size: 100% 100%;
   flex-direction: column;
 }
 
@@ -48,6 +129,11 @@
   box-shadow: 0 0 0 3px rgba(52,152,219,0.25);
 }
 
+.chat-input input::placeholder {
+  color: #a0aec0;
+  font-style: italic;
+}
+
 .chat-input button {
   padding: 12px 22px;
   margin-left: 12px;
@@ -77,13 +163,13 @@
 
 /* 메시지 스타일 */
 .message {
-  max-width: 70%;
+  max-width: 85%;
   padding: 12px 18px;
   margin-bottom: 18px;
   border-radius: 20px;
   word-wrap: break-word;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font-size: 1rem;
+  font-size: 1.5rem;
   line-height: 1.5;
 }
 
@@ -101,7 +187,6 @@
   border-bottom-left-radius: 5px;
 }
 
-/* 메시지 사용자 이름 스타일 */
 .message-username {
   font-weight: bold;
   margin-right: 8px;
@@ -116,20 +201,10 @@
   background-color: #ecf0f1;
   border-radius: 15px;
   margin: 10px 0;
+  font-size: 1.2rem;
 }
 
-/* 사용자 닉네임 스타일 */
-.user-nickname {
-  background-color: #2ecc71;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 15px;
-  font-weight: bold;
-  margin-right: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
-
+/* 모달 스타일 */
 .session-expired-modal {
   background-color: white;
   padding: 25px;
@@ -140,7 +215,7 @@
 
 .session-expired-modal button {
   margin-top: 15px;
-  padding: 10px 20px;
+  padding: 12px 24px;
   background-color: #3498db;
   color: white;
   border: none;
@@ -148,6 +223,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
+  font-size: 1.2rem;
 }
 
 .session-expired-modal button:hover {
@@ -155,6 +231,7 @@
   transform: translateY(-2px);
 }
 
+/* 채팅 금지 상태 스타일 */
 .chat-input input.chat-banned {
   border-color: #e74c3c;
   color: #e74c3c;
@@ -162,51 +239,4 @@
 
 .chat-input input.chat-banned::placeholder {
   color: #e74c3c;
-}
-
-.login-message {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #7f8c8d;
-  margin-top: 50px;
-}
-
-/* 로그아웃 버튼 스타일 */
-.logout-button {
-  background-color: #e74c3c;
-  color: white;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.logout-button:hover {
-  background-color: #c0392b;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-/* 스크롤바 스타일 */
-.chat-messages::-webkit-scrollbar {
-  width: 8px;
-}
-
-.chat-messages::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-.chat-messages::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-  transition: background 0.3s ease;
-}
-
-.chat-messages::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
 }

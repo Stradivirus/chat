@@ -1,17 +1,15 @@
-/* base.css */
+/* base.css - 기본 레이아웃과 전역 스타일 */
 
-/* 한지 느낌의 폰트 추가 */
-@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap');
-
-
+/* 폰트 추가 */
+@import url('https://fonts.googleapis.com/css2?family=Gaegu&family=Hi+Melody&family=Single+Day&display=swap');
 
 /* 전역 스타일 */
 body {
   margin: 0;
-  font-family: 'Gowun Batang', serif;
+  font-family: "Single Day", serif;
   background-color: #f7f9fc;
   color: #2c3e50;
-  line-height: 1.6;
+  line-height: 1.4;
 }
 
 /* 기본 레이아웃 */
@@ -22,35 +20,40 @@ body {
 }
 
 .main-section {
-  flex: 0.8;
+  flex: 0.7;
   display: flex;
   flex-direction: column;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../assets/main_background.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   background-color: #ffffff;
   border-radius: 10px 0 0 10px;
   overflow: hidden;
 }
 
 .side-container {
-  flex: 0.2;
+  flex: 0.3;
   display: flex;
   flex-direction: column;
   background-color: #f0f2f5;
-  border-left: 1px solid #e2e8f0;
+  border-left: 1px solid #4093ff;
   border-radius: 0 10px 10px 0;
 }
 
 /* 기본 컨테이너 스타일 */
 .main-content {
   flex: 1;
-  background-color: #ffffff;
+  background-color: transparent;
   padding: 30px;
   overflow-y: auto;
 }
 
 /* 기본 헤더 스타일 */
 .main-header {
-  height: 70px;
-  background-color: #ffffff;
+  height: 80px;
+  background-color: transparent;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../assets/banner.png');
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: center;
@@ -61,8 +64,8 @@ body {
 }
 
 .side-header {
-  height: 70px;
-  background-color: #f8fafc;
+  height: 80px;
+  background-color: #a6d3ff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: space-between;
@@ -74,31 +77,20 @@ body {
 /* 기본 텍스트 스타일 */
 h1 {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: 4rem;
   color: #3498db;
   text-align: center;
-  font-weight: 600;
+  font-weight: bold;
   letter-spacing: 0.5px;
 }
 
-/* 스크롤바 스타일 */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-  transition: background 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+/* 설명 텍스트 스타일 */
+.description-text {
+  font-size: 2rem;
+  color: #4a5568;
+  text-align: center;
+  margin-bottom: 50px;
+  line-height: 1.6;
 }
 
 /* 반응형 디자인 */

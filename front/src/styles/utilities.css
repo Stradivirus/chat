@@ -1,4 +1,4 @@
-/* utilities.css */
+/* utilities.css - 유틸리티 클래스와 공통 스타일 */
 
 /* 유틸리티 클래스 */
 .hidden {
@@ -27,4 +27,24 @@
 ::selection {
   background-color: #3498db;
   color: #ffffff;
+}
+
+/* 공통 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

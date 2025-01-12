@@ -67,43 +67,22 @@ function App() {
   const HomeButton = () => (
     <button 
       onClick={handleHomeButtonClick}
-      style={{
-        position: 'absolute',
-        left: '20px',
-        top: '20px',
-        padding: '8px 16px',
-        backgroundColor: '#4a90e2',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        zIndex: 1000
-      }}
+      className="home-button button-base"
     >
       홈으로
     </button>
   );
 
   const MainButtons = () => (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '20px',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100%'
-    }}>
+    <div className="main-buttons">
+      <p className="description-text">
+        "다소니"는<br />
+        사랑하는 사람을 뜻하는 순우리말입니다.<br />
+        소중한 사람들에게 마음을 전하세요.
+      </p>
       <button 
         onClick={handleInfoButtonClick}
-        style={{
-          padding: '15px 30px',
-          fontSize: '18px',
-          backgroundColor: '#28a745',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
+        className="info-button button-base"
       >
         시스템 소개
       </button>
@@ -114,7 +93,7 @@ function App() {
     <div className="App">
       <div className="main-section">
         <header className="main-header">
-          <h1>다소니</h1>
+          <h1>다 소 니</h1>
         </header>
         <main className="main-content">
           {showInfo ? (
