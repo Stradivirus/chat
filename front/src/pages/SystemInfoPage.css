@@ -79,12 +79,56 @@
     overflow: hidden;
 }
 
+/* 아키텍처 다이어그램 컨테이너 스타일 */
+.architecture-diagram-container {
+    width: 50%;
+    margin: 2rem auto;
+    transform: scale(0.5);
+    transform-origin: top center;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 그리드 레이아웃 컨테이너 */
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 3rem;
+    margin-top: 3rem;
+    margin-bottom: 4rem;
+}
+
+/* 반응형 디자인 */
 @media (max-width: 1024px) {
     .system-info {
         padding: 2rem;
     }
     
-    div[style*="grid-template-columns"] {
-        grid-template-columns: 1fr !important;
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .architecture-diagram-container {
+        width: 75%;
+        transform: scale(0.75);
+    }
+}
+
+@media (max-width: 768px) {
+    .system-info {
+        padding: 1rem;
+    }
+
+    .architecture-diagram-container {
+        width: 100%;
+        transform: scale(1);
+    }
+
+    .system-section {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
     }
 }
