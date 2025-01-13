@@ -82,13 +82,15 @@
 /* 아키텍처 다이어그램 컨테이너 스타일 */
 .architecture-diagram-container {
     width: 100%;
-    margin: 2rem auto;
+    margin: 2rem auto 0 auto; /* margin-bottom 제거 */
     transform: scale(0.5);
     transform-origin: top center;
     background-color: white;
     padding: 1rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    height: 50%; /* 높이 제한 추가 */
+    overflow: hidden; /* 넘치는 부분 숨김 */
 }
 
 /* 그리드 레이아웃 컨테이너 */
