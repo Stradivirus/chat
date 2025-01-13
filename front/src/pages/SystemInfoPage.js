@@ -58,14 +58,12 @@ const SystemInfoPage = () => {
               </a>
             </div>
           </div>
-        </div>
-        
+          
           {/* 아키텍처 다이어그램 */}
           <div className="architecture-diagram-container">
             <ArchitectureDiagram />
           </div>
-
-          
+        </div>
 
         {/* 오른쪽: 향후 추가 기능 */}
         <div>
