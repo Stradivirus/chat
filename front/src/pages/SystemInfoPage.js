@@ -50,11 +50,6 @@ const SystemInfoPage = () => {
             </div>
           </div>
 
-          {/* 아키텍처 다이어그램 */}
-          <div className="architecture-diagram-container">
-            <ArchitectureDiagram />
-          </div>
-
           {/* GitHub 링크 섹션 */}
           <div className="github-links">
             <div className="link-container">
@@ -64,6 +59,13 @@ const SystemInfoPage = () => {
             </div>
           </div>
         </div>
+        
+          {/* 아키텍처 다이어그램 */}
+          <div className="architecture-diagram-container">
+            <ArchitectureDiagram />
+          </div>
+
+          
 
         {/* 오른쪽: 향후 추가 기능 */}
         <div>
