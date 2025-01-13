@@ -81,16 +81,23 @@
 
 /* 아키텍처 다이어그램 컨테이너 스타일 */
 .architecture-diagram-container {
+    position: relative;
     width: 100%;
-    margin: 2rem auto 0 auto; /* margin-bottom 제거 */
-    transform: scale(0.5);
-    transform-origin: top center;
+    height: 400px;  /* 다이어그램 실제 높이에 맞게 조정 */
+    margin: 1rem 0;
     background-color: white;
-    padding: 1rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    height: 50%; /* 높이 제한 추가 */
-    overflow: hidden; /* 넘치는 부분 숨김 */
+    overflow: hidden;
+}
+
+.architecture-diagram-container > * {
+    transform: scale(0.5);
+    transform-origin: top left;
+    position: absolute;
+    width: 200%;
+    left: 0;
+    top: 0;
 }
 
 /* 그리드 레이아웃 컨테이너 */
@@ -98,7 +105,7 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 3rem;
-    margin-top: 3rem;
+    margin-top: 2rem;
     margin-bottom: 4rem;
 }
 
@@ -114,8 +121,7 @@
     }
 
     .architecture-diagram-container {
-        width: 75%;
-        transform: scale(0.75);
+        height: 300px;  /* 모바일에서는 높이 줄임 */
     }
 }
 
@@ -124,13 +130,12 @@
         padding: 1rem;
     }
 
-    .architecture-diagram-container {
-        width: 100%;
-        transform: scale(1);
-    }
-
     .system-section {
         padding: 1.5rem;
         margin-bottom: 2rem;
+    }
+
+    .architecture-diagram-container {
+        height: 250px;  /* 더 작은 화면에서는 더 줄임 */
     }
 }
