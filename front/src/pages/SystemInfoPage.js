@@ -16,10 +16,6 @@ const SystemInfoPage = () => {
          <a href="https://github.com/Stradivirus/chat" target="_blank" rel="noopener noreferrer">
            Chat 깃
          </a>
-         <span className="divider">|</span>
-         <a href="https://github.com/Stradivirus/exam" target="_blank" rel="noopener noreferrer">
-           exam 깃
-         </a>
        </div>
      </div>
      
@@ -42,7 +38,6 @@ const SystemInfoPage = () => {
                <li>실시간 채팅 UI 제공</li>
                <li>채팅창 관리 및 스팸 방지 기능</li>
                <li>WebSocket을 통한 실시간 통신</li>
-               <li>시험 시스템 연동</li>
              </ul>
 
              <h4>백엔드 (FastAPI)</h4>
@@ -63,35 +58,11 @@ const SystemInfoPage = () => {
          </div>
 
          <div className="system-section">
-           <h3>2. 시험 시스템 (exam_network)</h3>
-           <div className="component-description">
-             <h4>Nginx</h4>
-             <ul>
-               <li>리버스 프록시 역할</li>
-               <li>정적 파일 서빙</li>
-             </ul>
-
-             <h4>Django</h4>
-             <ul>
-               <li>시험 문제 및 답안 관리</li>
-               <li>시험 진행 로직 처리</li>
-             </ul>
-
-             <h4>PostgreSQL</h4>
-             <ul>
-               <li>시험 문제 데이터베이스</li>
-               <li>답안 데이터 저장</li>
-             </ul>
-           </div>
-         </div>
-
-         <div className="system-section">
-           <h3>3. 데이터 흐름</h3>
+           <h3>2. 데이터 흐름</h3>
            <div className="component-description">
              <ul>
                <li>채팅 데이터: FastAPI → Redis → PostgreSQL</li>
                <li>로그인 정보: FastAPI → PostgreSQL</li>
-               <li>시험 데이터: PostgreSQL → Django</li>
              </ul>
            </div>
          </div>
@@ -172,7 +143,6 @@ const SystemInfoPage = () => {
              <ul>
                <li>사용자 관리 대시보드</li>
                <li>채팅 로그 조회 및 관리</li>
-               <li>시험 문제/답안 관리</li>
                <li>시스템 설정 관리</li>
              </ul>
            </div>

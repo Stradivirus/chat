@@ -1,13 +1,16 @@
 /* src/pages/SystemInfoPage.css */
+@import url('https://spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css');
+
 .system-info {
     color: #444;
     line-height: 1.6;
     padding: 3rem 4rem 5rem 4rem;
     height: calc(100vh - 60px);
     overflow-y: auto;
-  }
-  
-  .github-links {
+    font-family: 'Spoqa Han Sans Neo', sans-serif;
+}
+
+.github-links {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,79 +18,73 @@
     padding: 1rem;
     background-color: #f8f9fa;
     border-radius: 8px;
-  }
-  
-  .link-container {
+}
+
+.link-container {
     display: flex;
     align-items: center;
     gap: 1rem;
-  }
-  
-  .link-container a {
+}
+
+.link-container a {
     color: #0366d6;
     text-decoration: none;
     padding: 0.5rem 1rem;
     border-radius: 6px;
-    font-family: monospace;
     font-size: 1.1rem;
     background-color: #fff;
     border: 1px solid #e1e4e8;
     transition: all 0.2s ease;
-  }
-  
-  .link-container a:hover {
+}
+
+.link-container a:hover {
     background-color: #f1f8ff;
     border-color: #0366d6;
-  }
-  
-  .divider {
-    color: #586069;
-    font-weight: bold;
-  }
-  
-  .system-section {
+}
+
+.system-section {
     margin-bottom: 3rem;
     padding: 2rem;
     background-color: #f8f9fa;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  
-  .system-section h3 {
+}
+
+.system-section h3 {
     color: #2c3e50;
     margin-bottom: 1rem;
-  }
-  
-  .component-description {
+}
+
+.component-description {
     padding-left: 1rem;
-  }
-  
-  .component-description h4 {
+}
+
+.component-description h4 {
     color: #34495e;
     margin: 1rem 0 0.5rem 0;
-  }
-  
-  .component-description ul {
+}
+
+.component-description ul {
     list-style-type: disc;
     padding-left: 2rem;
     margin-bottom: 1rem;
-  }
-  
-  .component-description li {
+}
+
+.component-description li {
     margin-bottom: 0.5rem;
-  }
-  
-  .main-content {
+}
+
+.main-content {
     height: 100%;
     overflow: hidden;
-  }
-  
-  @media (max-width: 1024px) {
+}
+
+@media (max-width: 1024px) {
     .system-info {
-      padding: 2rem;
+        padding: 2rem;
     }
     
     div[style*="grid-template-columns"] {
-      grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr !important;
     }
-  }
+}
