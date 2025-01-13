@@ -81,7 +81,7 @@
 
 /* 아키텍처 다이어그램 컨테이너 스타일 */
 .architecture-diagram-container {
-    width: 70%;
+    width: 100%;
     margin: 2rem auto;
     transform: scale(0.5);
     transform-origin: top center;

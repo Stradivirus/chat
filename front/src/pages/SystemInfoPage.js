@@ -11,6 +11,20 @@ const SystemInfoPage = () => {
       <div className="content-grid">
         {/* 왼쪽: 시스템 구성 */}
         <div>
+          {/* GitHub 링크 섹션 */}
+          <div className="github-links">
+            <div className="link-container">
+              <a href="https://github.com/Stradivirus/chat" target="_blank" rel="noopener noreferrer">
+                Chat 깃
+              </a>
+            </div>
+          </div>
+          
+          {/* 아키텍처 다이어그램 */}
+          <div className="architecture-diagram-container">
+            <ArchitectureDiagram />
+          </div>
+          
           <h2 style={{ color: '#333', marginBottom: '1.5rem' }}>시스템 구성</h2>
           
           <div className="system-section">
@@ -48,20 +62,6 @@ const SystemInfoPage = () => {
                 <li>로그인 정보: FastAPI → PostgreSQL</li>
               </ul>
             </div>
-          </div>
-
-          {/* GitHub 링크 섹션 */}
-          <div className="github-links">
-            <div className="link-container">
-              <a href="https://github.com/Stradivirus/chat" target="_blank" rel="noopener noreferrer">
-                Chat 깃
-              </a>
-            </div>
-          </div>
-          
-          {/* 아키텍처 다이어그램 */}
-          <div className="architecture-diagram-container">
-            <ArchitectureDiagram />
           </div>
         </div>
 
