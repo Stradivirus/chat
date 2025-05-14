@@ -108,7 +108,7 @@ function App() {
       </div>
       <div className="side-container">
         <header className="side-header">
-          <span className="user-count">현재 접속자 수: {userCount}</span>
+          <span className="user-count">실시간 접속자 수: {userCount}</span>
           {user && (
             <div>
               <span className="user-nickname">{user.username}님</span>
