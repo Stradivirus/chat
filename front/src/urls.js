@@ -1,6 +1,6 @@
 // src/urls.js
 // 로컬로 바로 실행할 경우
-const BASE_URL = 'http://34.64.160.67:8000';
+const BASE_URL = 'http://web:8000';
 //const BASE_URL = 'http://localhost:8000';
 
 export const URLS = {
