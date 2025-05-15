@@ -40,7 +40,7 @@ services:
     build:
       context: ./back
     expose:
-      - "8000"
+      - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
