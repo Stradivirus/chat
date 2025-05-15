@@ -65,7 +65,6 @@ services:
     ports:
       - "80:80"
     environment:
-      - REACT_APP_API_URL=http://web:8000
       - TZ=${TZ}
     depends_on:
       - web
