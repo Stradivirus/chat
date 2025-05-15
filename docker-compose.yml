@@ -15,7 +15,7 @@ services:
     networks:
       - chat-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -31,13 +31,13 @@ services:
     networks:
       - chat-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   web:
-    build: 
+    build:
       context: ./back
     expose:
       - "8000"
@@ -59,14 +59,13 @@ services:
     restart: on-failure
 
   frontend:
-    build: 
+    build:
       context: ./front
       dockerfile: Dockerfile
-    environment:
-      - REACT_APP_API_URL=http://web:8000
     ports:
       - "80:80"
     environment:
+      - REACT_APP_API_URL=http://web:8000
       - TZ=${TZ}
     depends_on:
       - web
@@ -76,6 +75,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+
 
 networks:
   chat-network:
