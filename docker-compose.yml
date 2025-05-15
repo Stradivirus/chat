@@ -62,7 +62,7 @@ services:
     build: 
       context: ./front
       dockerfile: Dockerfile
-      environment:
+    environment:
       - REACT_APP_API_URL=http://web:8000
     ports:
       - "80:80"
