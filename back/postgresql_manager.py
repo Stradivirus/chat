@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timedelta
 import bcrypt
 import os
+import ssl
 from db_schema import initialize_database, ensure_partition_exists
 
 class PostgresManager:
@@ -14,12 +15,18 @@ class PostgresManager:
 
     async def start(self):
         """데이터베이스 연결 풀을 생성하고 테이블을 초기화하는 메서드"""
+        # SSL 컨텍스트 생성 (Supabase는 SSL 필요)
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
         self.pool = await asyncpg.create_pool(
             user=os.getenv('POSTGRES_USER'),
             password=os.getenv('POSTGRES_PASSWORD'),
             database=os.getenv('POSTGRES_DB'),
             host=os.getenv('POSTGRES_HOST'),
-            port=int(os.getenv('POSTGRES_PORT', '5432'))
+            port=int(os.getenv('POSTGRES_PORT', '5432')),
+            ssl=ssl_context  # SSL 연결 추가
         )
         await initialize_database(self.pool)
 
