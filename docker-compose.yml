@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # postgres 서비스 제거 (Supabase 사용)
   
   redis:
     image: redis:6
