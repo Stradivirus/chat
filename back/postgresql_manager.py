@@ -27,13 +27,23 @@ class PostgresManager:
             host=os.getenv('POSTGRES_HOST'),
             port=int(os.getenv('POSTGRES_PORT', '5432')),
             ssl=ssl_context,
-            statement_cache_size=0  # ← 이 줄 추가!
+            statement_cache_size=0,  # Statement cache 비활성화
+            min_size=1,  # 최소 연결 수
+            max_size=5,  # 최대 연결 수 (Supabase 연결 제한을 고려)
+            command_timeout=60,  # 명령 타임아웃 (60초)
+            server_settings={
+                'application_name': 'chat_app',
+                'jit': 'off'  # JIT 비활성화로 메모리 사용량 줄이기
+            }
         )
         await initialize_database(self.pool)
 
     async def stop(self):
         """데이터베이스 연결 풀을 종료하는 메서드"""
-        await self.pool.close()
+        if self.pool:
+            await self.pool.close()
+            self.pool = None
+            self.logger.info("PostgreSQL connection pool closed")
 
     async def register_user(self, username: str, password: str, email: str, nickname: str):
         """새 사용자를 등록하는 메서드"""
@@ -49,6 +59,9 @@ class PostgresManager:
         except asyncpg.UniqueViolationError:
             self.logger.warning(f"Attempted to register existing username or email: {username}")
             return False, "Username or email already exists"
+        except asyncpg.PostgresConnectionError as e:
+            self.logger.error(f"Database connection error during user registration: {e}")
+            return False, "Database connection error"
         except Exception as e:
             self.logger.error(f"Error registering user {username}: {e}")
             return False, "Error registering user"
@@ -133,23 +146,31 @@ class PostgresManager:
 
     async def save_messages_from_redis(self, messages: List[Dict]):
         """Redis에서 가져온 메시지를 PostgreSQL에 저장하는 메서드"""
+        if not messages:
+            return True
+            
         try:
             async with self.pool.acquire() as conn:
-                for message in messages:
-                    # 사용자 ID가 유효한지 확인
-                    user_exists = await conn.fetchval('SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)', uuid.UUID(message['sender_id']))
-                    if not user_exists:
-                        self.logger.warning(f"Skipping message from non-existent user: {message['sender_id']}")
-                        continue
+                async with conn.transaction():
+                    for message in messages:
+                        # 사용자 ID가 유효한지 확인
+                        user_exists = await conn.fetchval('SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)', uuid.UUID(message['sender_id']))
+                        if not user_exists:
+                            self.logger.warning(f"Skipping message from non-existent user: {message['sender_id']}")
+                            continue
 
-                    message_date = datetime.fromtimestamp(message['timestamp']).date()
-                    await ensure_partition_exists(conn, 'messages', message_date)
-                    await conn.execute(
-                        'INSERT INTO messages (sender_id, nickname, content, created_at) VALUES ($1, $2, $3, $4)',
-                        uuid.UUID(message['sender_id']), message['nickname'], message['content'],
-                        datetime.fromtimestamp(message['timestamp'])
-                    )
+                        message_date = datetime.fromtimestamp(message['timestamp']).date()
+                        await ensure_partition_exists(conn, 'messages', message_date)
+                        await conn.execute(
+                            'INSERT INTO messages (sender_id, nickname, content, created_at) VALUES ($1, $2, $3, $4)',
+                            uuid.UUID(message['sender_id']), message['nickname'], message['content'],
+                            datetime.fromtimestamp(message['timestamp'])
+                        )
+            self.logger.info(f"Successfully saved {len(messages)} messages from Redis to PostgreSQL")
             return True
+        except asyncpg.PostgresConnectionError as e:
+            self.logger.error(f"Database connection error saving messages from Redis: {e}")
+            return False
         except Exception as e:
             self.logger.error(f"Error saving messages from Redis: {e}")
             return False

@@ -19,6 +19,9 @@ async def periodic_user_count_update(manager):
                 await connection.send_json({"type": "user_count", "count": count})
             # 1초 대기 후 다음 업데이트 실행
             await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            logger.info("periodic_user_count_update task cancelled")
+            break
         except Exception as e:
             # 오류 발생 시 로그 기록 및 5초 대기 후 재시도
             logger.error(f"Error in periodic user count update: {e}", exc_info=True)
@@ -49,6 +52,9 @@ async def sync_redis_to_postgres():
                     logger.error("Failed to sync messages to PostgreSQL")
             # 1초 대기 후 다음 동기화 확인
             await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            logger.info("sync_redis_to_postgres task cancelled")
+            break
         except Exception as e:
             # 오류 발생 시 로그 기록 및 5초 대기 후 재시도
             logger.error(f"Error in sync_redis_to_postgres: {e}", exc_info=True)
@@ -70,6 +76,8 @@ def stop_background_tasks(manager):
     """
     # 모든 백그라운드 태스크 취소
     for task in manager.background_tasks:
-        task.cancel()
+        if not task.cancelled():
+            task.cancel()
     # background_tasks 세트 초기화
     manager.background_tasks.clear()
+    logger.info("All background tasks stopped")

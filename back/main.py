@@ -35,17 +35,31 @@ manager = ConnectionManager()
 @app.on_event("startup")
 async def startup_event():
     """애플리케이션 시작 시 실행되는 이벤트 핸들러"""
-    await postgres_manager.start()  # PostgreSQL 연결 시작
-    await redis_manager.connect()  # Redis 연결 시작
-    await redis_manager.redis.delete("active_connections")  # active_connections 초기화
-    start_background_tasks(manager)  # 백그라운드 작업 시작
+    try:
+        logger.info("Starting application...")
+        await postgres_manager.start()  # PostgreSQL 연결 시작
+        logger.info("PostgreSQL connection established")
+        await redis_manager.connect()  # Redis 연결 시작
+        logger.info("Redis connection established")
+        await redis_manager.redis.delete("active_connections")  # active_connections 초기화
+        start_background_tasks(manager)  # 백그라운드 작업 시작
+        logger.info("Background tasks started")
+        logger.info("Application startup completed successfully")
+    except Exception as e:
+        logger.error(f"Failed to start application: {e}", exc_info=True)
+        raise
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """애플리케이션 종료 시 실행되는 이벤트 핸들러"""
-    await postgres_manager.stop()  # PostgreSQL 연결 종료
-    await redis_manager.disconnect()  # Redis 연결 종료
-    stop_background_tasks(manager)  # 백그라운드 작업 종료
+    try:
+        logger.info("Shutting down application...")
+        stop_background_tasks(manager)  # 백그라운드 작업 종료
+        await postgres_manager.stop()  # PostgreSQL 연결 종료
+        await redis_manager.disconnect()  # Redis 연결 종료
+        logger.info("Application shutdown completed")
+    except Exception as e:
+        logger.error(f"Error during application shutdown: {e}", exc_info=True)
 
 class UserRegister(BaseModel):
     """사용자 등록을 위한 Pydantic 모델"""
