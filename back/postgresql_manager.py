@@ -44,21 +44,10 @@ class PostgresManager:
         for attempt in range(max_retries):
             try:
                 self.logger.info(f"Testing PostgreSQL connection (attempt {attempt + 1}/{max_retries})")
-                
                 conn = await asyncpg.connect(**self._connection_params)
                 await conn.fetchval('SELECT 1')
-                
-                # 임시 풀 생성하여 데이터베이스 초기화
-                temp_pool = await asyncpg.create_pool(
-                    **self._connection_params,
-                    min_size=1,
-                    max_size=1
-                )
-                
-                await initialize_database(temp_pool)
-                await temp_pool.close()
+                await initialize_database(conn)  # 임시 풀 대신 단일 연결로 초기화
                 await conn.close()
-                
                 self.logger.info("PostgreSQL connection test successful")
                 break
                 
