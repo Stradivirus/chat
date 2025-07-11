@@ -252,5 +252,15 @@ class PostgresManager:
             if conn:
                 await conn.close()
 
+async def initialize_database(conn_or_pool):
+    # Pool 객체면 acquire, Connection 객체면 바로 사용
+    if hasattr(conn_or_pool, "acquire"):
+        async with conn_or_pool.acquire() as conn:
+            await conn.execute("CREATE TABLE IF NOT EXISTS ...")
+            # ... 기타 초기화 쿼리 ...
+    else:
+        await conn_or_pool.execute("CREATE TABLE IF NOT EXISTS ...")
+        # ... 기타 초기화 쿼리 ...
+
 # PostgresManager 인스턴스 생성
 postgres_manager = PostgresManager()
