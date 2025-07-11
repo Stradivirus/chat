@@ -253,14 +253,20 @@ class PostgresManager:
                 await conn.close()
 
 async def initialize_database(conn_or_pool):
-    # Pool 객체면 acquire, Connection 객체면 바로 사용
+    """Pool 또는 Connection 객체를 받아서 db_schema의 create_tables를 호출"""
+    from db_schema import create_tables, ensure_partition_exists
     if hasattr(conn_or_pool, "acquire"):
         async with conn_or_pool.acquire() as conn:
-            await conn.execute("CREATE TABLE IF NOT EXISTS ...")
-            # ... 기타 초기화 쿼리 ...
+            await create_tables(conn)
+            # 현재 날짜에 대한 파티션만 생성
+            current_date = datetime.now().date()
+            await ensure_partition_exists(conn, 'messages', current_date)
+            await ensure_partition_exists(conn, 'user_sessions', current_date)
     else:
-        await conn_or_pool.execute("CREATE TABLE IF NOT EXISTS ...")
-        # ... 기타 초기화 쿼리 ...
+        await create_tables(conn_or_pool)
+        current_date = datetime.now().date()
+        await ensure_partition_exists(conn_or_pool, 'messages', current_date)
+        await ensure_partition_exists(conn_or_pool, 'user_sessions', current_date)
 
 # PostgresManager 인스턴스 생성
 postgres_manager = PostgresManager()
