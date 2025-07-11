@@ -29,7 +29,6 @@ class PostgresManager:
             'database': os.getenv('POSTGRES_DB'),
             'host': os.getenv('POSTGRES_HOST'),
             'port': int(os.getenv('POSTGRES_PORT', '5432')),
-            'ssl': ssl_context,
             'command_timeout': 30,
             'server_settings': {
                 'application_name': 'chat_app',
