@@ -18,9 +18,9 @@ const BASE_URL = '';  // 또는 const BASE_URL = '/api';
 export const URLS = {
   API_BASE_URL: '/api',
   WS_URL: '/ws',
-  LOGIN: '/api/login',
-  REGISTER: '/api/register',
-  CHECK_DUPLICATE: '/api/check_duplicate',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  CHECK_DUPLICATE: '/check_duplicate',
 };
 
 export default URLS;
