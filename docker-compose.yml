@@ -26,7 +26,6 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      # postgres 의존성 제거
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

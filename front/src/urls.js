@@ -14,13 +14,13 @@
 
 // front/src/urls.js
 
-const BASE_URL = '';  // 빈 문자열로 변경
+const BASE_URL = '';  // 또는 const BASE_URL = '/api';
 export const URLS = {
-  API_BASE_URL: BASE_URL,
-  WS_URL: `ws://${window.location.host}/ws`,
-  LOGIN: `${BASE_URL}/api/login`,
-  REGISTER: `${BASE_URL}/api/register`,
-  CHECK_DUPLICATE: `${BASE_URL}/api/check_duplicate`,
+  API_BASE_URL: '/api',
+  WS_URL: '/ws',
+  LOGIN: '/api/login',
+  REGISTER: '/api/register',
+  CHECK_DUPLICATE: '/api/check_duplicate',
 };
 
 export default URLS;
