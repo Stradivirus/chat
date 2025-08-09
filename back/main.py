@@ -68,7 +68,7 @@ class UserRegister(BaseModel):
     nickname: str = Field(..., min_length=1)
     password: str = Field(..., min_length=1)
 
-@app.post("/register")
+@app.post("/api/register")
 @handle_error
 async def register(user: UserRegister):
     """사용자 등록 엔드포인트"""
@@ -85,7 +85,7 @@ class LoginData(BaseModel):
     username: str = Field(..., min_length=1)
     password: str = Field(..., min_length=1)
 
-@app.post("/login")
+@app.post("/api/login")
 @handle_error
 async def login(login_data: LoginData):
     """로그인 엔드포인트"""
@@ -100,7 +100,7 @@ class DuplicateCheckData(BaseModel):
     username: str = Field(None, min_length=1)
     nickname: str = Field(None, min_length=1)
 
-@app.post("/check_duplicate")
+@app.post("/api/check_duplicate")
 @handle_error
 async def check_duplicate(data: DuplicateCheckData):
     """중복 체크 엔드포인트"""
@@ -116,7 +116,7 @@ async def check_duplicate(data: DuplicateCheckData):
     else:
         raise HTTPException(status_code=400, detail="Invalid request")
 
-@app.get("/recent_messages")
+@app.get("/api/recent_messages")
 @handle_error
 async def get_recent_messages(limit: int = 50):
     """최근 메시지를 가져오는 엔드포인트"""
