@@ -14,9 +14,10 @@ services:
       - chat-network
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
+      interval: 300s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   web:
     build:
@@ -36,7 +37,7 @@ services:
       - TZ=${TZ}
     networks:
       - chat-network
-    restart: on-failure
+    restart: unless-stopped
 
   frontend:
     build:
@@ -50,6 +51,7 @@ services:
       - web
     networks:
       - chat-network
+    restart: unless-stopped
 
 volumes:
   # postgres_data 볼륨 제거
