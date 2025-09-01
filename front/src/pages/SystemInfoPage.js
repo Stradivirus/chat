@@ -6,7 +6,7 @@ import './SystemInfoPage.css';
 const SystemInfoPage = () => {
   return (
     <div className="system-info">
-      <h2 style={{ color: '#333', marginBottom: '2rem' }}>시스템 아키텍처</h2>
+      <h2 style={{ color: '#333', marginBottom: '2rem' }}>시스템 구조</h2>
       
       <div className="content-grid">
         {/* 왼쪽: 시스템 구성 */}
