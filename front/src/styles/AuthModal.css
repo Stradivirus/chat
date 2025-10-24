@@ -119,3 +119,25 @@
   border-left: 4px solid #e53e3e;
   text-align: center;
 }
+
+/* 스타일: 테스트 로그인 버튼 (기본 .auth-modal button 규칙을 상속하면서 색상만 변경) */
+.auth-modal button.test-login-btn {
+  /* 기존 .auth-modal button 스타일을 기반으로 하되, 색상만 덮어씌움 */
+  background-color: #6c63ff; /* 보라 계열의 포인트 색상 */
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(108, 99, 255, 0.12);
+}
+
+.auth-modal button.test-login-btn:hover {
+  background-color: #574bff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(87, 75, 255, 0.16);
+}
+
+.auth-modal button.test-login-btn:disabled {
+  background-color: #bfb9ff;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  color: #ffffff;
+}

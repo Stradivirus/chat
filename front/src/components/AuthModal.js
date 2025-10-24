@@ -221,7 +221,7 @@ function AuthModal({ onLoginSuccess }) {
         {isLoginMode ? '회원가입' : '로그인'}
       </button>
       {isLoginMode && (
-        <button onClick={handleTestLogin} className="switch-auth-type" disabled={isLoading}>
+        <button onClick={handleTestLogin} className="switch-auth-type test-login-btn" disabled={isLoading}>
           {isLoading ? '처리 중...' : '테스트 계정으로 로그인'}
         </button>
       )}
