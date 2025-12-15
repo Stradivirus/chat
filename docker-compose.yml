@@ -14,7 +14,7 @@ services:
       - chat-network
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
-      interval: 300s
+      interval: 15s
       timeout: 5s
       retries: 5
     restart: unless-stopped

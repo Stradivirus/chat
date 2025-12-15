@@ -28,48 +28,30 @@ class RedisManager:
             "nickname": nickname,
             "timestamp": time.time()
         }
-        # 사용자별 메시지 저장 (최근 200개)
-        await self.redis.lpush(f"user:{sender_id}:messages", json.dumps(message_data))
-        await self.redis.ltrim(f"user:{sender_id}:messages", 0, 199)
         
-        # 전체 메시지 저장 (최근 2000개)
+        # 전체 메시지 저장 (최근 20개 유지 - 사용자 요청 반영)
+        # 리스트에 넣고 바로 trim하여 20개만 남김
         await self.redis.lpush("all_messages", json.dumps(message_data))
-        await self.redis.ltrim("all_messages", 0, 1999)
+        await self.redis.ltrim("all_messages", 0, 19)
 
-    async def get_recent_messages(self, limit: int = 50) -> List[Dict]:
+    async def get_recent_messages(self, limit: int = 20) -> List[Dict]:
         """최근 메시지를 가져오는 메서드"""
-        # 'all_messages' 리스트에서 지정된 개수만큼의 최근 메시지를 가져옴
+        # 'all_messages' 리스트에서 지정된 개수만큼 가져옴 (최대 20개)
         messages = await self.redis.lrange("all_messages", 0, limit - 1)
-        # JSON 문자열을 파이썬 딕셔너리로 변환하여 반환
-        return [json.loads(msg) for msg in messages]
-
-    async def get_user_messages(self, sender_id: str, limit: int = 50) -> List[Dict]:
-        """특정 사용자의 최근 메시지를 가져오는 메서드"""
-        # 특정 사용자의 메시지 리스트에서 지정된 개수만큼의 최근 메시지를 가져옴
-        messages = await self.redis.lrange(f"user:{sender_id}:messages", 0, limit - 1)
         # JSON 문자열을 파이썬 딕셔너리로 변환하여 반환
         return [json.loads(msg) for msg in messages]
 
     async def add_active_connection(self, sender_id: str):
         """활성 연결을 추가하는 메서드"""
-        # 'active_connections' 집합에 사용자 ID를 추가
         await self.redis.sadd("active_connections", sender_id)
 
     async def remove_active_connection(self, sender_id: str):
         """활성 연결을 제거하는 메서드"""
-        # 'active_connections' 집합에서 사용자 ID를 제거
         await self.redis.srem("active_connections", sender_id)
 
     async def get_active_connections_count(self) -> int:
         """활성 연결 수를 가져오는 메서드"""
-        # 'active_connections' 집합의 크기(활성 연결 수)를 반환
         return await self.redis.scard("active_connections")
-
-    async def clear_synced_messages(self, count: int):
-        """동기화된 메시지를 Redis에서 제거하는 메서드"""
-        # 'all_messages' 리스트에서 지정된 개수만큼의 메시지를 제거
-        # 이는 PostgreSQL로 동기화된 후 Redis에서 해당 메시지들을 삭제하는 용도로 사용됨
-        await self.redis.ltrim("all_messages", count, -1)
 
 # RedisManager 인스턴스 생성
 redis_manager = RedisManager()
