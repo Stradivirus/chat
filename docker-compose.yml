@@ -44,7 +44,7 @@ services:
       context: ./front
       dockerfile: Dockerfile
     ports:
-      - "8005:80"
+      - "8002:80"
     environment:
       - TZ=${TZ}
     depends_on:
